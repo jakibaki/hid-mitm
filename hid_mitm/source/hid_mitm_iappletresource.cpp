@@ -12,11 +12,15 @@ static HidSharedMemory tmp_shmem_mem;
 static Thread shmem_patch_thread;
 
 std::map<u64, u64> rebind_config;
+// VALUE is the key that we want to get when we click KEY
 
 void loadConfig(std::map<u64, u64> &cfg)
 {
     cfg.clear();
+    // makes it so that when KEY_A is pressed we get KEY_B
     cfg[KEY_A] = KEY_B;
+
+    // makes it so that when KEY_B is pressed we get KEY_A
     cfg[KEY_B] = KEY_A;
 }
 
@@ -43,13 +47,13 @@ void copy_thread(void *_)
                     HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[j];
                     HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[j];
 
-                    for(auto const& [orig, fake]: rebind_config)
+                    for(auto const& [key, value]: rebind_config)
                     {
-                        bool key_held = !!(curRealEnt->buttons & fake);
+                        bool key_held = !!(curRealEnt->buttons & key);
                         if(key_held)
-                            curTmpEnt->buttons |= orig;
+                            curTmpEnt->buttons |= value;
                         else
-                            curTmpEnt->buttons &= ~orig;
+                            curTmpEnt->buttons &= ~value;
                     }
                 }
             }
