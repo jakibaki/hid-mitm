@@ -5,9 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/devkitpro/**",
-                "${workspaceFolder}/../../**",
-                "/opt/devkitpro/devkitA64/aarch64-none-elf/include",
-                "/home/jakibaki/Atmosphere/common/include"
+                "${workspaceFolder}/../**",
+                "/opt/devkitpro/devkitA64/aarch64-none-elf/include"
             ],
             "defines": [],
             "compilerPath": "/bin/clang",
