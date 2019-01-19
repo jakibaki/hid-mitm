@@ -17,11 +17,13 @@ std::map<u64, u64> rebind_config;
 void loadConfig(std::map<u64, u64> &cfg)
 {
     cfg.clear();
+    /*
     // makes it so that when KEY_A is pressed we get KEY_B
     cfg[KEY_A] = KEY_B;
 
     // makes it so that when KEY_B is pressed we get KEY_A
     cfg[KEY_B] = KEY_A;
+    */
 }
 
 void copy_thread(void *_)
@@ -33,7 +35,7 @@ void copy_thread(void *_)
         oldTime = curTime;
         curTime = svcGetSystemTick();
 
-        svcSleepThread(std::max(1000L, 10000000 - (s64) ((curTime - oldTime) * 0.0192)));
+        svcSleepThread(std::max(1000L, 16666666 - (s64) ((curTime - oldTime) * 0.0192)));
 
         tmp_shmem_mem = *real_shmem_mem;
         for (int i = 0; i < 10; i++)
