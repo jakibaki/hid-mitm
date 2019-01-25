@@ -3,6 +3,8 @@
 #include <stratosphere.hpp>
 
 
+void loadConfig();
+
 enum IAppletResourceCmd : u32 {
     IAppletResource_GetSharedMemoryHandle = 0
 };

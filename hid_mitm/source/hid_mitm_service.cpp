@@ -34,9 +34,13 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
     out.SetValue(std::move(intf));
     if (out.IsDomain()) {
-        fatalSimple(0x111);
+        fatalSimple(0x111); // Doesn't seem to ever happen thankfully
     }
     //fatalSimple(0x222);
     return 0;
 }
 
+Result HidMitmService::ReloadConfig() {
+    loadConfig();
+    return 0;
+}

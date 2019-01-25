@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "ini.h"
 
 #include "hid_mitm_iappletresource.hpp"
 
@@ -16,43 +17,109 @@ static HidSharedMemory tmp_shmem_mem;
 
 static Thread shmem_patch_thread;
 
-std::map<u64, u64> rebind_config;
+static std::unordered_map<u64, u64> rebind_config;
 // VALUE is the key that we want to get when we click KEY
 
-void loadConfig(std::map<u64, u64> &cfg)
-{
-    cfg.clear();
-    // makes it so that when KEY_A is pressed we get KEY_B
-    cfg[KEY_A] = KEY_B;
+std::string key_names[] = {"KEY_A", "KEY_B", "KEY_X", "KEY_Y", "KEY_LSTICK", "KEY_RSTICK", "KEY_L", "KEY_R", "KEY_ZL", "KEY_ZR", "KEY_PLUS", "KEY_MINUS", "KEY_DLEFT", "KEY_DUP", "KEY_DRIGHT", "KEY_DDOWN"};
 
-    // makes it so that when KEY_B is pressed we get KEY_A
-    cfg[KEY_B] = KEY_A;
+s64 get_key_ind(std::string str)
+{
+    for (u64 i = 0; i < sizeof(key_names) / sizeof(char *); i++)
+    {
+        if (str == key_names[i])
+        {
+            return BIT(i);
+        }
+    }
+    return -1;
 }
 
-void rebind_keys(int gamepad_ind, int layout)
+/* sample config:
+; Gamepad-rebind config. Currently only supports player one rebinding.
+; KEY is the button that should register as pressed when VALUE is pressed
+; Every single key should have a binding. Anything else is undefined behaviour
+[player1]
+KEY_A = KEY_A
+KEY_B = KEY_B
+KEY_X = KEY_X
+KEY_Y = KEY_Y
+KEY_LSTICK = KEY_LSTICK
+KEY_RSTICK = KEY_RSTICK
+KEY_L = KEY_L
+KEY_R = KEY_R
+KEY_ZL = KEY_ZL
+KEY_ZR = KEY_ZR
+KEY_PLUS = KEY_PLUS
+KEY_MINUS = KEY_MINUS
+KEY_DLEFT = KEY_DLEFT
+KEY_DUP = KEY_DUP
+KEY_DRIGHT = KEY_DRIGHT
+KEY_DDOWN = KEY_DDOWN
+*/
+
+static int handler(void *dummy, const char *section, const char *name,
+                   const char *value)
 {
-    HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
-    HidControllerLayout *currentRealLayout = &real_shmem_mem->controllers[gamepad_ind].layouts[layout];
+    s64 key = get_key_ind(name);
+    s64 val = get_key_ind(value);
 
-    int cur_ent = currentTmpLayout->header.latestEntry;
+    FILE *f = fopen("/test", "a");
+    fclose(f);
 
-    HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_ent];
-    HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
 
-    for (auto const &[key, value] : rebind_config)
+    if (key < 0 || val < 0)
     {
-        bool key_held = !!(curRealEnt->buttons & key);
-        if (key_held)
-            curTmpEnt->buttons |= value;
-        else
-            curTmpEnt->buttons &= ~value;
+        return -1; //fatalSimple(MAKERESULT(321, 1)); // 2321-0001 bad config
+    }
+    rebind_config[key] = val;
+    return 0;
+}
+
+void loadConfig()
+{
+    rebind_config.clear();
+    if (ini_parse("/modules/hid_mitm/config.ini", handler, NULL) < 0)
+    {
+        //fatalSimple(MAKERESULT(321, 1)); // 2321-0001 bad config
     }
 }
 
-void get_keys(int sock, int gamepad_ind)
+void rebind_keys(int gamepad_ind)
 {
-    u64 buttons;
-    recv(sock, &buttons, sizeof(u64), 0);
+    for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
+    {
+        HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
+        HidControllerLayout *currentRealLayout = &real_shmem_mem->controllers[gamepad_ind].layouts[layout];
+
+        int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
+        int cur_real_ent_ind = currentRealLayout->header.latestEntry;
+
+        HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
+        HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_real_ent_ind];
+
+        for (auto it = rebind_config.begin(); it != rebind_config.end(); it++)
+        {
+            if (curRealEnt->buttons & it->second)
+            {
+                curTmpEnt->buttons |= it->first;
+            }
+            else
+            {
+                curTmpEnt->buttons &= ~it->first;
+            }
+        }
+    }
+}
+int get_keys(int sock, int gamepad_ind)
+{
+    u64 buttons = 0;
+
+    int ret = recv(sock, &buttons, sizeof(u64), 0);
+    if (ret <= 0)
+    {
+        close(sock);
+        return -1;
+    }
 
     for (int layout = 0; layout < 7; layout++)
     {
@@ -65,9 +132,10 @@ void get_keys(int sock, int gamepad_ind)
         HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
         curTmpEnt->buttons = buttons;
     }
+    return 0;
 }
 
-void send_keys(int sock, int gamepad_ind)
+int send_keys(int sock, int gamepad_ind)
 {
     int layout = LAYOUT_HANDHELD; // TODO: May be a bad idea, not sure
     HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
@@ -77,23 +145,30 @@ void send_keys(int sock, int gamepad_ind)
 
     HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_ent];
     HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
-    send(sock, &curTmpEnt->buttons, sizeof(u64), 0);
+    if (send(sock, &curTmpEnt->buttons, sizeof(u64), 0) <= 0)
+    {
+        close(sock);
+        return -1;
+    }
+    return 0;
 }
 
 void copy_thread(void *_)
 {
 
-    bool network_setup = false;
-    int i = 0; // So we don't check for network 60 times/second
-    int sock;
+    //bool network_setup = false;
+    //bool sending = false;
+    //int i = 0; // So we don't check for network 60 times/second
+    //int sock;
 
     u64 curTime = svcGetSystemTick();
     u64 oldTime;
 
     while (true)
     {
-        curTime = svcGetSystemTick(); // TODO: I'm tired while writing this code, check if I'm being an idiot
+        curTime = svcGetSystemTick();
 
+        /*
         if (i % 60 == 0 && !network_setup && gethostid() != INADDR_LOOPBACK)
         {
             sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -101,29 +176,32 @@ void copy_thread(void *_)
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = htons(5555);
             inet_pton(AF_INET, "192.168.0.38", &serv_addr.sin_addr);
-            connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-            network_setup = true;
+            if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == 0)
+                network_setup = true;
+            else
+                close(sock);
         }
+        */
 
         tmp_shmem_mem = *real_shmem_mem;
-        if (network_setup)
+        /*if (network_setup)
         {
-            //char buf[1000];
-            //sprintf(buf, "%lx\n", svcGetSystemTick());
-            //send(sock, buf, strlen(buf), 0);
-            get_keys(sock, CONTROLLER_HANDHELD);
-            //send_keys(sock, CONTROLLER_HANDHELD);
-        }
-        /*        for (int i = 0; i < 7; i++)
-            rebind_keys(CONTROLLER_HANDHELD, i); // Handheld joycons
-*/
+
+            //if (send_keys(sock, CONTROLLER_HANDHELD) != 0)
+            //    network_setup = false;
+            if (get_keys(sock, CONTROLLER_HANDHELD) != 0)
+                network_setup = false;
+        }*/
+        rebind_keys(CONTROLLER_HANDHELD);
+        rebind_keys(CONTROLLER_PLAYER_1);
+
         *fake_shmem_mem = tmp_shmem_mem;
 
-        i++;
+        //i++;
 
         oldTime = curTime;
         curTime = svcGetSystemTick();
-        svcSleepThread(std::max(1000L, (s64) (16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
+        svcSleepThread(std::max(1000L, (s64)(16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
     }
 }
 
@@ -138,7 +216,7 @@ Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem
 
         // Copy over for the first time to make sure that there never is a "bad" sharedmem to be seen
         *fake_shmem_mem = *real_shmem_mem;
-        loadConfig(rebind_config);
+        loadConfig();
         threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x2C, 3);
         threadStart(&shmem_patch_thread);
     }

@@ -30,7 +30,7 @@ extern "C" {
 
     u32 __nx_applet_type = AppletType_None;
 
-    #define INNER_HEAP_SIZE 0x300000
+    #define INNER_HEAP_SIZE 0x10000
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char   nx_inner_heap[INNER_HEAP_SIZE];
     
@@ -52,8 +52,29 @@ void __libnx_initheap(void) {
 	fake_heap_end   = (char*)addr + size;
 }
 
-void __appInit(void) {
 
+
+static const SocketInitConfig sockInitConf = {
+    .bsdsockets_version = 1,
+
+    .tcp_tx_buf_size        = 0x2000,
+    .tcp_rx_buf_size        = 0x4000,
+    .tcp_tx_buf_max_size    = 0x10000,
+    .tcp_rx_buf_max_size    = 0x10000,
+
+    .udp_tx_buf_size = 0x2400,
+    .udp_rx_buf_size = 0xA500,
+
+    .sb_efficiency = 4,
+
+    .serialized_out_addrinfos_max_size  = 0x1000,
+    .serialized_out_hostent_max_size    = 0x200,
+    .bypass_nsd                         = false,
+    .dns_timeout                        = 0,
+};
+
+
+void __appInit(void) {
     Result rc;
     rc = smInitialize();
     if (R_FAILED(rc))
@@ -70,9 +91,9 @@ void __appInit(void) {
     rc = hidInitialize();
     if (R_FAILED(rc))
         fatalSimple(rc);
-    rc = socketInitializeDefault();
-    if (R_FAILED(rc))
-        fatalSimple(rc);
+    //rc = socketInitialize(&sockInitConf);
+    //if (R_FAILED(rc))
+    //    fatalSimple(rc);
     
 }
 

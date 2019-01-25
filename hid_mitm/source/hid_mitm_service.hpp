@@ -21,7 +21,8 @@
 
 enum HidCmd : u32
 {
-    HidCmd_CreateAppletResource = 0
+    HidCmd_CreateAppletResource = 0,
+    HidCmd_ReloadHidMitmConfig = 65000
 };
 
 class HidMitmService : public IMitmServiceObject
@@ -42,9 +43,11 @@ class HidMitmService : public IMitmServiceObject
   protected:
     /* Overridden commands. */
     virtual Result CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 arid) final;
+    virtual Result ReloadConfig() final;
 
   public:
     DEFINE_SERVICE_DISPATCH_TABLE{
         MakeServiceCommandMeta<HidCmd_CreateAppletResource, &HidMitmService::CreateAppletResource>(),
+        MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &HidMitmService::ReloadConfig>(),
     };
 };
