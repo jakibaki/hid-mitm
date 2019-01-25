@@ -123,13 +123,13 @@ void copy_thread(void *_)
 
         oldTime = curTime;
         curTime = svcGetSystemTick();
-        svcSleepThread(std::max(1000L, 16666666 - (s64)((curTime - oldTime) * 52.083333333333336))); // magic numbers! 
+        svcSleepThread(std::max(1000L, (s64) (16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
     }
 }
 
 Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand)
 {
-    if (fake_shmem.handle == NULL)
+    if (fake_shmem.handle == 0)
     {
         shmemCreate(&fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
         shmemMap(&fake_shmem);
