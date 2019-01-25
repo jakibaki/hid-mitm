@@ -63,9 +63,6 @@ static int handler(void *dummy, const char *section, const char *name,
     s64 key = get_key_ind(name);
     s64 val = get_key_ind(value);
 
-    FILE *f = fopen("/test", "a");
-    fclose(f);
-
 
     if (key < 0 || val < 0)
     {
