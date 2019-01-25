@@ -92,9 +92,7 @@ void copy_thread(void *_)
 
     while (true)
     {
-        oldTime = curTime;
-        curTime = svcGetSystemTick();
-        svcSleepThread(std::max(1000L, 16666666 - (s64)((curTime - oldTime) * 0.0192)));
+        curTime = svcGetSystemTick(); // TODO: I'm tired while writing this code, check if I'm being an idiot
 
         if (i % 60 == 0 && !network_setup && gethostid() != INADDR_LOOPBACK)
         {
@@ -110,6 +108,9 @@ void copy_thread(void *_)
         tmp_shmem_mem = *real_shmem_mem;
         if (network_setup)
         {
+            //char buf[1000];
+            //sprintf(buf, "%lx\n", svcGetSystemTick());
+            //send(sock, buf, strlen(buf), 0);
             get_keys(sock, CONTROLLER_HANDHELD);
             //send_keys(sock, CONTROLLER_HANDHELD);
         }
@@ -119,6 +120,10 @@ void copy_thread(void *_)
         *fake_shmem_mem = tmp_shmem_mem;
 
         i++;
+
+        oldTime = curTime;
+        curTime = svcGetSystemTick();
+        svcSleepThread(std::max(1000L, 16666666 - (s64)((curTime - oldTime) * 52.083333333333336))); // magic numbers! 
     }
 }
 
