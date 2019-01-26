@@ -30,7 +30,7 @@ extern "C" {
 
     u32 __nx_applet_type = AppletType_None;
 
-    #define INNER_HEAP_SIZE 0x10000
+    #define INNER_HEAP_SIZE 0x100000
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char   nx_inner_heap[INNER_HEAP_SIZE];
     
@@ -91,9 +91,9 @@ void __appInit(void) {
     rc = hidInitialize();
     if (R_FAILED(rc))
         fatalSimple(rc);
-    //rc = socketInitialize(&sockInitConf);
-    //if (R_FAILED(rc))
-    //    fatalSimple(rc);
+    rc = socketInitialize(&sockInitConf);
+    if (R_FAILED(rc))
+        fatalSimple(rc);
     
 }
 
