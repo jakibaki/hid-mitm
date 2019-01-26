@@ -106,20 +106,16 @@ void rebind_keys(int gamepad_ind)
         }
     }
 }
-
-FILE *file = NULL;
-
 int get_keys(int sock, int gamepad_ind)
 {
     u64 buttons = 0;
 
-    /*int ret = recv(sock, &buttons, sizeof(u64), 0);
+    int ret = recv(sock, &buttons, sizeof(u64), 0);
     if (ret <= 0)
     {
         close(sock);
         return -1;
-    }*/
-    fread(&buttons, sizeof(u64), 1, file);
+    }
 
     for (int layout = 0; layout < 7; layout++)
     {
@@ -145,13 +141,11 @@ int send_keys(int sock, int gamepad_ind)
 
     HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_ent];
     HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
-
-    fwrite(&curTmpEnt->buttons, sizeof(u64), 1, file);
-    /*if (send(sock, &curTmpEnt->buttons, sizeof(u64), 0) <= 0)
+    if (send(sock, &curTmpEnt->buttons, sizeof(u64), 0) <= 0)
     {
         close(sock);
         return -1;
-    }*/
+    }
     return 0;
 }
 
@@ -163,17 +157,11 @@ void copy_thread(void *_)
     int i = 0;
     int sock;
 
-    if (sending)
-        file = fopen("/input.log", "w");
-    else
-        file = fopen("/input.log", "r");
-
     u64 startTime = svcGetSystemTick();
 
     while (true)
     {
 
-        /*
         if (i % 60 == 0 && !network_setup && gethostid() != INADDR_LOOPBACK)
         {
             sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -185,22 +173,22 @@ void copy_thread(void *_)
                 network_setup = true;
             else
                 close(sock);
-        }*/
+        }
 
         tmp_shmem_mem = *real_shmem_mem;
-        //if (network_setup)
-        //{
-        if (sending)
-        {
-            if (send_keys(sock, CONTROLLER_HANDHELD) != 0)
-                network_setup = false;
+        if (network_setup)
+        {            
+            if (sending)
+            {
+                if (send_keys(sock, CONTROLLER_HANDHELD) != 0)
+                    network_setup = false;
+            }
+            else
+            {
+                if (get_keys(sock, CONTROLLER_HANDHELD) != 0)
+                    network_setup = false;
+            }
         }
-        else
-        {
-            if (get_keys(sock, CONTROLLER_HANDHELD) != 0)
-                network_setup = false;
-        }
-        //}
 
         *fake_shmem_mem = tmp_shmem_mem;
 
@@ -212,7 +200,7 @@ void copy_thread(void *_)
         {
             // We took too long. (sleep mode maybe?)
             // Appears to only happen right after startup so not too bad
-
+            
             startTime = curTime;
             wantTime = curTime + (19200000 / 60);
             i = 1;
@@ -222,8 +210,6 @@ void copy_thread(void *_)
         u64 sleepTime = wantTime - curTime;
 
         svcSleepThread(sleepTime * 1e+9L / 19200000);
-
-        //svcSleepThread(std::max(1000L, (s64)(16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
     }
 }
 
