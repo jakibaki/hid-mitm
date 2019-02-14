@@ -29,4 +29,6 @@ class IAppletResourceMitmService : public IServiceObject {
         DEFINE_SERVICE_DISPATCH_TABLE {
             MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
         };
+        u64 aruid = 0;
+        u32 pid = 0;
 };

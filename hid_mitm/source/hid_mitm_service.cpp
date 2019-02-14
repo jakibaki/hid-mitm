@@ -23,7 +23,7 @@ void HidMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ct
     /* No commands need postprocessing. */    
 }
 
-Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 arid)
+Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 aruid)
 {
     //std::shared_ptr<IAppletResourceMitmService> service;
     //service = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(NULL));
@@ -32,11 +32,13 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
     std::shared_ptr<IAppletResourceMitmService> intf = nullptr;
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
+    intf->aruid = aruid;
+    intf->pid = pid.pid;
+    
     out.SetValue(std::move(intf));
     if (out.IsDomain()) {
         fatalSimple(0x111); // Doesn't seem to ever happen thankfully
     }
-    //fatalSimple(0x222);
     return 0;
 }
 

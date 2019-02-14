@@ -1,4 +1,3 @@
-
 #include <mutex>
 #include <map>
 #include <switch.h>
@@ -7,6 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "ini.h"
+#include "hid_custom.h"
 
 #include "hid_mitm_iappletresource.hpp"
 
@@ -63,10 +63,9 @@ static int handler(void *dummy, const char *section, const char *name,
     s64 key = get_key_ind(name);
     s64 val = get_key_ind(value);
 
-
     if (key < 0 || val < 0)
     {
-        return -1; //fatalSimple(MAKERESULT(321, 1)); // 2321-0001 bad config
+        return -1;
     }
     rebind_config[key] = val;
     return 0;
@@ -152,12 +151,6 @@ int send_keys(int sock, int gamepad_ind)
 
 void copy_thread(void *_)
 {
-
-    //bool network_setup = false;
-    //bool sending = false;
-    //int i = 0; // So we don't check for network 60 times/second
-    //int sock;
-
     u64 curTime = svcGetSystemTick();
     u64 oldTime;
 
@@ -165,36 +158,12 @@ void copy_thread(void *_)
     {
         curTime = svcGetSystemTick();
 
-        /*
-        if (i % 60 == 0 && !network_setup && gethostid() != INADDR_LOOPBACK)
-        {
-            sock = socket(AF_INET, SOCK_STREAM, 0);
-            struct sockaddr_in serv_addr = {0};
-            serv_addr.sin_family = AF_INET;
-            serv_addr.sin_port = htons(5555);
-            inet_pton(AF_INET, "192.168.0.38", &serv_addr.sin_addr);
-            if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == 0)
-                network_setup = true;
-            else
-                close(sock);
-        }
-        */
-
         tmp_shmem_mem = *real_shmem_mem;
-        /*if (network_setup)
-        {
 
-            //if (send_keys(sock, CONTROLLER_HANDHELD) != 0)
-            //    network_setup = false;
-            if (get_keys(sock, CONTROLLER_HANDHELD) != 0)
-                network_setup = false;
-        }*/
         rebind_keys(CONTROLLER_HANDHELD);
         rebind_keys(CONTROLLER_PLAYER_1);
 
         *fake_shmem_mem = tmp_shmem_mem;
-
-        //i++;
 
         oldTime = curTime;
         curTime = svcGetSystemTick();
@@ -206,10 +175,14 @@ Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem
 {
     if (fake_shmem.handle == 0)
     {
+        
+        customHidInitialize(aruid, pid);//((u32*) ((ServiceSession*) this)->backup_tls)[4]);
+
         shmemCreate(&fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
         shmemMap(&fake_shmem);
         fake_shmem_mem = (HidSharedMemory *)shmemGetAddr(&fake_shmem);
-        real_shmem_mem = (HidSharedMemory *)hidGetSharedmemAddr();
+        real_shmem_mem = (HidSharedMemory *)customHidGetSharedmemAddr();
+
 
         // Copy over for the first time to make sure that there never is a "bad" sharedmem to be seen
         *fake_shmem_mem = *real_shmem_mem;
