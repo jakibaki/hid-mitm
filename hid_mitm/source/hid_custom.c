@@ -6,12 +6,36 @@ static Service hid_service;
 static Service hid_iappletresource = {0};
 static SharedMemory hid_shmem;
 
+//#define USE_REAL_APPLET_RESOURCE
+
 static Result _customHidCreateAppletResource(Service *srv)
 {
-   /*
+    /*
     What is happening here is that libstratosphere has the original request buffer (modified to spoof the pid) already in the tls so we can just execute serviceIpcDispatch and be happy.
     This will *only* work if it's the first ipc done after getting the mitm-call.
     */
+
+    #ifndef USE_REAL_APPLET_RESOURCE
+   
+
+    IpcCommand c;
+    ipcInitialize(&c);
+
+    struct {
+        u64 magic;
+        u64 cmd_id;
+        u64 AppletResourceUserId;
+    } *raw;
+
+    ipcSendPid(&c);
+
+    raw = ipcPrepareHeader(&c, sizeof(*raw));
+
+    raw->magic = SFCI_MAGIC;
+    raw->cmd_id = 0;
+    raw->AppletResourceUserId = 0;
+    #endif
+
 
     Result rc = serviceIpcDispatch(srv);
 
