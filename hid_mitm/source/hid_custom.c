@@ -3,35 +3,16 @@
 #include <switch.h>
 
 static Service hid_service;
-static Service hid_iappletresource;
+static Service hid_iappletresource = {0};
 static SharedMemory hid_shmem;
 
-static Result _customHidCreateAppletResource(Service *srv, Service *srv_out, u64 AppletResourceUserId, u32 pid)
+static Result _customHidCreateAppletResource(Service *srv)
 {
-    IpcCommand c;
-    ipcInitialize(&c);
-    struct
-    {
-        u64 magic;
-        u64 cmd_id;
-        u64 AppletResourceUserId;
-    } * raw;
+   /*
+    What is happening here is that libstratosphere has the original request buffer (modified to spoof the pid) already in the tls so we can just execute serviceIpcDispatch and be happy.
+    This will *only* work if it's the first ipc done after getting the mitm-call.
+    */
 
-    ipcSendPid(&c);
-
-    raw = ipcPrepareHeader(&c, sizeof(*raw));
-
-    //TODO: Doesn't work yet
-    AppletResourceUserId = 0;
-
-    //u32 *cmdbuf = (u32 *)armGetTls();
-    //cmdbuf[4] = 0xFFFE0000UL | (pid & 0xFFFFUL); // Makes sure that the command is sent with the fake-pid
-
-    raw->magic = SFCI_MAGIC;
-    raw->cmd_id = 0;
-    raw->AppletResourceUserId = AppletResourceUserId;
-    
-    
     Result rc = serviceIpcDispatch(srv);
 
     if (R_SUCCEEDED(rc))
@@ -49,7 +30,7 @@ static Result _customHidCreateAppletResource(Service *srv, Service *srv_out, u64
 
         if (R_SUCCEEDED(rc))
         {
-            serviceCreate(srv_out, r.Handles[0]);
+            serviceCreate(&hid_iappletresource, r.Handles[0]);
         }
     }
 
@@ -101,15 +82,20 @@ void *customHidGetSharedmemAddr()
     return shmemGetAddr(&hid_shmem);
 }
 
-void customHidInitialize(u64 aruid, u64 pid)
+bool initialized = false;
+void customHidInitialize(Service* serv)
 {
+    if(initialized)
+        return;
+    initialized = true;
+
+
     Result rc;
-    rc = smGetService(&hid_service, "hid");
+    rc = _customHidCreateAppletResource(serv); // Executes the original ipc
     if (R_FAILED(rc))
         fatalSimple(rc);
-    rc = _customHidCreateAppletResource(&hid_service, &hid_iappletresource, aruid, pid);
-    if (R_FAILED(rc))
-        fatalSimple(rc);
+
+    hid_service = *serv;
 
     Handle sharedMemHandle;
 

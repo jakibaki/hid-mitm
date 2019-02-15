@@ -4,9 +4,9 @@
 extern "C" {
 #endif
 
-void customHidInitialize(u64 aruid, u32 pid);
+void customHidInitialize(Service* service);
 void* customHidGetSharedmemAddr();
-
+extern Service hid_iappletresource;
 
 #ifdef __cplusplus
 }

@@ -21,7 +21,7 @@ class IAppletResourceMitmService : public IServiceObject {
 
 
         static void PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx);
-                    
+        
     protected:
         /* Overridden commands. */
         virtual Result GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand) final;
@@ -29,6 +29,4 @@ class IAppletResourceMitmService : public IServiceObject {
         DEFINE_SERVICE_DISPATCH_TABLE {
             MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
         };
-        u64 aruid = 0;
-        u32 pid = 0;
 };

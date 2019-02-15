@@ -35,7 +35,6 @@ class HidMitmService : public IMitmServiceObject
 
     static bool ShouldMitm(u64 pid, u64 tid)
     {
-
         if(tid < 0x0100000000001000UL) // Don't mitm sysmodules
             return false;
         if(tid == 0x010000000000100CUL) // Don't mitm overlaydisp since that likes to take the focus and we want to respect that without having to keep multiple sharedmems around.

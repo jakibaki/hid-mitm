@@ -18,6 +18,7 @@
 #include <switch.h>
 #include "hid_mitm_service.hpp"
 #include "hid_mitm_iappletresource.hpp"
+#include "hid_custom.h"
 
 void HidMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx) {
     /* No commands need postprocessing. */    
@@ -25,16 +26,16 @@ void HidMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ct
 
 Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 aruid)
 {
-    //std::shared_ptr<IAppletResourceMitmService> service;
-    //service = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(NULL));
-    //out.SetValue(std::move(service));
+    customHidInitialize(this->forward_service.get());
+
 
     std::shared_ptr<IAppletResourceMitmService> intf = nullptr;
 
+
+
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
-    intf->aruid = aruid;
-    intf->pid = pid.pid;
-    
+    //intf->hid_service = this->forward_service.get();
+
     out.SetValue(std::move(intf));
     if (out.IsDomain()) {
         fatalSimple(0x111); // Doesn't seem to ever happen thankfully

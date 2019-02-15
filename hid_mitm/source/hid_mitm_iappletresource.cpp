@@ -176,8 +176,6 @@ Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem
     if (fake_shmem.handle == 0)
     {
         
-        customHidInitialize(aruid, pid);//((u32*) ((ServiceSession*) this)->backup_tls)[4]);
-
         shmemCreate(&fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
         shmemMap(&fake_shmem);
         fake_shmem_mem = (HidSharedMemory *)shmemGetAddr(&fake_shmem);
