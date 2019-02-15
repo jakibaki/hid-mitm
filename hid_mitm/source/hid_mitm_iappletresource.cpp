@@ -20,6 +20,8 @@ static Thread shmem_patch_thread;
 static std::unordered_map<u64, u64> rebind_config;
 // VALUE is the key that we want to get when we click KEY
 
+static Mutex configMutex;
+
 std::string key_names[] = {"KEY_A", "KEY_B", "KEY_X", "KEY_Y", "KEY_LSTICK", "KEY_RSTICK", "KEY_L", "KEY_R", "KEY_ZL", "KEY_ZR", "KEY_PLUS", "KEY_MINUS", "KEY_DLEFT", "KEY_DUP", "KEY_DRIGHT", "KEY_DDOWN"};
 
 s64 get_key_ind(std::string str)
@@ -36,8 +38,7 @@ s64 get_key_ind(std::string str)
 
 /* sample config:
 ; Gamepad-rebind config. Currently only supports player one rebinding.
-; KEY is the button that should register as pressed when VALUE is pressed
-; Every single key should have a binding. Anything else is undefined behaviour
+; VALUE is the button that gets registered when KEY is held down
 [player1]
 KEY_A = KEY_A
 KEY_B = KEY_B
@@ -73,11 +74,21 @@ static int handler(void *dummy, const char *section, const char *name,
 
 void loadConfig()
 {
+    mutexLock(&configMutex);
     rebind_config.clear();
     if (ini_parse("/modules/hid_mitm/config.ini", handler, NULL) < 0)
     {
         //fatalSimple(MAKERESULT(321, 1)); // 2321-0001 bad config
     }
+    mutexUnlock(&configMutex);
+}
+
+// Clears config until next load
+void clearConfig()
+{
+    mutexLock(&configMutex);
+    rebind_config.clear();
+    mutexUnlock(&configMutex);
 }
 
 void rebind_keys(int gamepad_ind)
@@ -93,17 +104,18 @@ void rebind_keys(int gamepad_ind)
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
         HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_real_ent_ind];
 
+        mutexLock(&configMutex);
+        if(rebind_config.size() > 0)
+            curTmpEnt->buttons = 0;
+
         for (auto it = rebind_config.begin(); it != rebind_config.end(); it++)
         {
-            if (curRealEnt->buttons & it->second)
+            if (curRealEnt->buttons & it->first)
             {
-                curTmpEnt->buttons |= it->first;
-            }
-            else
-            {
-                curTmpEnt->buttons &= ~it->first;
+                curTmpEnt->buttons |= it->second;
             }
         }
+        mutexUnlock(&configMutex);
     }
 }
 int get_keys(int sock, int gamepad_ind)
@@ -175,7 +187,7 @@ Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem
 {
     if (fake_shmem.handle == 0)
     {
-        
+        mutexInit(&configMutex);
         shmemCreate(&fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
         shmemMap(&fake_shmem);
         fake_shmem_mem = (HidSharedMemory *)shmemGetAddr(&fake_shmem);
