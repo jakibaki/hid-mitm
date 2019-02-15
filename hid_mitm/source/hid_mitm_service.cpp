@@ -34,7 +34,6 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
 
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
-    //intf->hid_service = this->forward_service.get();
 
     out.SetValue(std::move(intf));
     if (out.IsDomain()) {
@@ -45,5 +44,10 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
 
 Result HidMitmService::ReloadConfig() {
     loadConfig();
+    return 0;
+}
+
+Result HidMitmService::ClearConfig() {
+    clearConfig();
     return 0;
 }

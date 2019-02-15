@@ -4,6 +4,7 @@
 
 
 void loadConfig();
+void clearConfig();
 
 enum IAppletResourceCmd : u32 {
     IAppletResource_GetSharedMemoryHandle = 0
