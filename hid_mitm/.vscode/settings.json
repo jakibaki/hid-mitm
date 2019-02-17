@@ -50,6 +50,10 @@
         "variant": "cpp",
         "__config": "cpp",
         "__nullptr": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "time.h": "c",
+        "errno.h": "c",
+        "switch.h": "c",
+        "hid.h": "c"
     }
 }

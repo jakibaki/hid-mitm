@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "ini.h"
 #include "hid_custom.h"
+#include "udp_input.h"
 
 #include "hid_mitm_iappletresource.hpp"
 
@@ -96,69 +97,51 @@ void rebind_keys(int gamepad_ind)
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
-        HidControllerLayout *currentRealLayout = &real_shmem_mem->controllers[gamepad_ind].layouts[layout];
 
         int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
-        int cur_real_ent_ind = currentRealLayout->header.latestEntry;
 
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
-        HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_real_ent_ind];
 
         mutexLock(&configMutex);
-        if(rebind_config.size() > 0)
-            curTmpEnt->buttons = 0;
+        if(rebind_config.size() > 0) {
+            u64 buttons = 0;
 
-        for (auto it = rebind_config.begin(); it != rebind_config.end(); it++)
-        {
-            if (curRealEnt->buttons & it->first)
+            for (auto it = rebind_config.begin(); it != rebind_config.end(); it++)
             {
-                curTmpEnt->buttons |= it->second;
+                if (curTmpEnt->buttons & it->first)
+                {
+                    buttons |= it->second;
+                }
             }
+            //buttons |= curTmpEnt->buttons & (KEY_JOYCON_LEFT | KEY_JOYCON_DOWN | KEY_JOYCON_RIGHT | KEY_JOYCON_UP | KEY_LSTICK_DOWN | KEY_LSTICK_RIGHT | KEY_LSTICK_LEFT | KEY_LSTICK_UP | KEY_RSTICK_DOWN | KEY_RSTICK_LEFT | KEY_RSTICK_RIGHT | KEY_RSTICK_UP);
+            curTmpEnt->buttons = buttons;
+            
         }
         mutexUnlock(&configMutex);
     }
 }
-int get_keys(int sock, int gamepad_ind)
-{
-    u64 buttons = 0;
 
-    int ret = recv(sock, &buttons, sizeof(u64), 0);
-    if (ret <= 0)
+void get_from_udp() {
+    struct input_msg msg;
+    int res = poll_udp_input(&msg);
+    if(res != 0)
+        return;
+    
+    for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
-        close(sock);
-        return -1;
+        u32 controllers[] = {CONTROLLER_HANDHELD, CONTROLLER_PLAYER_1};
+
+        for(u32 gamepad = 0; gamepad < sizeof(controllers)/ sizeof(u32); gamepad++) {
+            HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[controllers[gamepad]].layouts[layout];
+            int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
+            HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
+            curTmpEnt->buttons = msg.keys;
+            curTmpEnt->joysticks[0].dx = msg.joy_l_x;
+            curTmpEnt->joysticks[0].dy = msg.joy_l_y;
+            curTmpEnt->joysticks[1].dx = msg.joy_r_x;
+            curTmpEnt->joysticks[1].dy = msg.joy_r_y;
+        }
     }
-
-    for (int layout = 0; layout < 7; layout++)
-    {
-        HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
-        HidControllerLayout *currentRealLayout = &real_shmem_mem->controllers[gamepad_ind].layouts[layout];
-
-        int cur_ent = currentTmpLayout->header.latestEntry;
-
-        HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_ent];
-        HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
-        curTmpEnt->buttons = buttons;
-    }
-    return 0;
-}
-
-int send_keys(int sock, int gamepad_ind)
-{
-    int layout = LAYOUT_HANDHELD; // TODO: May be a bad idea, not sure
-    HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
-    HidControllerLayout *currentRealLayout = &real_shmem_mem->controllers[gamepad_ind].layouts[layout];
-
-    int cur_ent = currentTmpLayout->header.latestEntry;
-
-    HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_ent];
-    HidControllerInputEntry *curRealEnt = &currentRealLayout->entries[cur_ent];
-    if (send(sock, &curTmpEnt->buttons, sizeof(u64), 0) <= 0)
-    {
-        close(sock);
-        return -1;
-    }
-    return 0;
 }
 
 void copy_thread(void *_)
@@ -172,6 +155,7 @@ void copy_thread(void *_)
 
         tmp_shmem_mem = *real_shmem_mem;
 
+        get_from_udp();
         rebind_keys(CONTROLLER_HANDHELD);
         rebind_keys(CONTROLLER_PLAYER_1);
 

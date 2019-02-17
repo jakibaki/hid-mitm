@@ -1,0 +1,5 @@
+hid_mitm/build/*
+hid_mitm/hid_mitm.elf
+hid_mitm/hid_mitm.npdm
+hid_mitm/hid_mitm.nso
+hid_mitm/hid_mitm.nsp

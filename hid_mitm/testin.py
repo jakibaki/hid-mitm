@@ -1,18 +1,10 @@
-"""
- Pygame base template for opening a window
- 
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
- 
- Explanation video: http://youtu.be/vRB_983kUMc
-"""
-
-import pygame
 from struct import pack, unpack
+import sys
 import socket
+from inputs import get_gamepad, devices
 from time import sleep
+import _thread
+
 keys = {
     "A": 1,
     "B": 1 << 1,
@@ -41,30 +33,57 @@ keys = {
 }
 
 
-def check_keys(pressed):
-    out = 0
-    if pressed[pygame.K_a]:
-        out |= keys["Y"]
-    if pressed[pygame.K_s]:
-        out |= keys["X"]
-        
-    if pressed[pygame.K_z]:
-        out |= keys["B"]
-        
-    if pressed[pygame.K_x]:
-        out |= keys["A"]
+def set_del_bit(bit, status, out):
+    if status:
+        out |= bit
+    else:
+        out &= ~bit
+    return out
 
-    if pressed[pygame.K_LEFT]:
-        out |= keys["DL"]
 
-    if pressed[pygame.K_DOWN]:
-        out |= keys["DD"]
+def check_keys(key, status, out):
 
-    if pressed[pygame.K_UP]:
-        out |= keys["DU"]
+    # for i in range(13):
+    #     print(joystick.get_button(i))
+    # print("--")
 
-    if pressed[pygame.K_RIGHT]:
-        out |= keys["DR"]
+    if key == "BTN_NORTH":
+        out = set_del_bit(keys["X"], status, out)
+    if key == "BTN_EAST":
+        out = set_del_bit(keys["A"], status, out)
+    if key == "BTN_SOUTH":
+        out = set_del_bit(keys["B"], status, out)
+    if key == "BTN_WEST":
+        out = set_del_bit(keys["Y"], status, out)
+
+    if key == "BTN_DPAD_UP":
+        out = set_del_bit(keys["DU"], status, out)
+    if key == "BTN_DPAD_RIGHT":
+        out = set_del_bit(keys["DR"], status, out)
+    if key == "BTN_DPAD_DOWN":
+        out = set_del_bit(keys["DD"], status, out)
+    if key == "BTN_DPAD_LEFT":
+        out = set_del_bit(keys["DL"], status, out)
+
+    if key == "BTN_TL":
+        out = set_del_bit(keys["L"], status, out)
+    if key == "BTN_TR":
+        out = set_del_bit(keys["R"], status, out)
+
+    if key == "BTN_TL2":
+        out = set_del_bit(keys["ZL"], status, out)
+    if key == "BTN_TR2":
+        out = set_del_bit(keys["ZR"], status, out)
+
+    if key == "BTN_THUMBL":
+        out = set_del_bit(keys["LST"], status, out)
+    if key == "BTN_THUMBR":
+        out = set_del_bit(keys["RST"], status, out)
+
+    if key == "BTN_START":
+        out = set_del_bit(keys["PLUS"], status, out)
+    if key == "BTN_SELECT":
+        out = set_del_bit(keys["MINUS"], status, out)
 
     return out
 
@@ -76,50 +95,96 @@ def print_in(buttons):
     print("")
 
 
-pygame.init()
-
-# Set the width and height of the screen [width, height]
-size = (100, 100)
-screen = pygame.display.set_mode(size)
-
-pygame.display.set_caption("My Game")
-
-# Loop until the user clicks the close button.
-done = False
-
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
-
-
-# create an INET, STREAMing socket
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# bind the socket to a public host, and a well-known port
-serversocket.bind((socket.gethostname(), 5555))
-# become a server socket
-serversocket.listen(1)
-(clientsock, address) = serversocket.accept()
-print("Got connection!")
+server_address = (sys.argv[1], 8080)
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # -------- Main Program Loop -----------
-while not done:
-    # --- Main event loop
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-    pressed = pygame.key.get_pressed()
-    out = check_keys(pressed)
-    clientsock.send(pack("<Q", out))
-    # --- Game logic should go here
 
-    # --- Screen-clearing code goes here
+keyout = 0
+dx_l = 0
+dy_l = 0
+dx_r = 0
+dy_r = 0
 
-    # Here, we clear the screen to white. Don't put other drawing commands
-    # above this, or they will be erased with this command.
-    # --- Go ahead and update the screen with what we've drawn.
-    pygame.display.flip()
-    # --- Limit to 30 frames per second
-    clock.tick(30)
+gamepad_type = str(devices.gamepads[0])
+print(gamepad_type)
+def input_poller():
+    global keyout
+    global dx_l
+    global dy_l
+    global dx_r
+    global dy_r
+    while(True):
+        try:
+            events = get_gamepad()
+        except:
+            exit(0)
+
+        for event in events:
+            if event.ev_type == "Key":
+                keyout = check_keys(event.code, event.state, keyout)
+            elif event.ev_type == "Absolute":
+                if(event.code == "ABS_X"):
+                    if gamepad_type == "Sony PLAYSTATION(R)3 Controller":
+                        dx_l = (event.state-128) * 255
+                    else:
+                        dx_l = event.state
+                    if(abs(dx_l) < 5000):
+                        dx_l = 0
+                if(event.code == "ABS_Y"):
+                    if gamepad_type == "Sony PLAYSTATION(R)3 Controller":
+                        dy_l = -(event.state-128) * 255
+                    else:
+                        dy_l = -event.state
+                    if(abs(dy_l) < 5000):
+                        dy_l = 0
+                if(event.code == "ABS_RX"):
+                    if gamepad_type == "Sony PLAYSTATION(R)3 Controller":
+                        dx_r = (event.state-128) * 255
+                    else:
+                        dx_r = event.state
+                    if(abs(dx_r) < 5000):
+                        dx_r = 0
+                if(event.code == "ABS_RY"):
+                    if gamepad_type == "Sony PLAYSTATION(R)3 Controller":
+                        dy_r = -(event.state-128) * 255
+                    else:
+                        dy_r = -event.state
+                    if(abs(dy_r) < 5000):
+                        dy_r = 0
+                if gamepad_type != "Sony PLAYSTATION(R)3 Controller":
+                    if(event.code == "ABS_Z"):
+                        if event.state >= 500:
+                            keyout = check_keys("BTN_TL2", 1, keyout)
+                        else:
+                            keyout = check_keys("BTN_TL2", 0, keyout)
+                    if(event.code == "ABS_RZ"):
+                        if event.state >= 500:
+                            keyout = check_keys("BTN_TR2", 1, keyout)
+                        else:
+                            keyout = check_keys("BTN_TR2", 0, keyout)
+                    if(event.code == "ABS_HAT0X"):
+                        if event.state == 0:
+                            keyout = check_keys("BTN_DPAD_LEFT", 0, keyout)
+                            keyout = check_keys("BTN_DPAD_RIGHT", 0, keyout)
+                        if event.state == 1:
+                            keyout = check_keys("BTN_DPAD_RIGHT", 1, keyout)
+                        if event.state == -1:
+                            keyout = check_keys("BTN_DPAD_LEFT", 1, keyout)
+                    if(event.code == "ABS_HAT0Y"):
+                        if event.state == 0:
+                            keyout = check_keys("BTN_DPAD_UP", 0, keyout)
+                            keyout = check_keys("BTN_DPAD_DOWN", 0, keyout)
+                        if event.state == 1:
+                            keyout = check_keys("BTN_DPAD_DOWN", 1, keyout)
+                        if event.state == -1:
+                            keyout = check_keys("BTN_DPAD_UP", 1, keyout)
 
 
-# Close the window and quit.
-pygame.quit()
+_thread.start_new_thread(input_poller, ())
+
+
+while(True):
+    #print(event.ev_type, event.code, event.state)
+    sock.sendto(pack("<HQiiii", 0x3275, keyout, dx_l, dy_l, dx_r, dy_r), server_address)
+    sleep(1/30)
