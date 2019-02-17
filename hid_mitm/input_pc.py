@@ -1,5 +1,6 @@
 from struct import pack, unpack
 import sys
+import os
 import socket
 from inputs import get_gamepad, devices
 from time import sleep
@@ -106,6 +107,10 @@ dy_l = 0
 dx_r = 0
 dy_r = 0
 
+if len(devices.gamepads) == 0:
+    print("No gamepads found")
+    os._exit(1)
+
 gamepad_type = str(devices.gamepads[0])
 print(gamepad_type)
 def input_poller():
@@ -118,7 +123,8 @@ def input_poller():
         try:
             events = get_gamepad()
         except:
-            exit(0)
+            print("Gamepad disconnected")
+            os._exit(1)
 
         for event in events:
             if event.ev_type == "Key":
