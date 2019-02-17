@@ -187,4 +187,4 @@ _thread.start_new_thread(input_poller, ())
 while(True):
     #print(event.ev_type, event.code, event.state)
     sock.sendto(pack("<HQiiii", 0x3275, keyout, dx_l, dy_l, dx_r, dy_r), server_address)
-    sleep(1/30)
+    sleep(1/120)
