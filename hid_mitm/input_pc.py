@@ -96,6 +96,10 @@ def print_in(buttons):
     print("")
 
 
+if len(sys.argv) != 2:
+    print("Usage: python3 input_pc.py SWITCH_IP")
+    os._exit(1)
+
 server_address = (sys.argv[1], 8080)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
