@@ -5,13 +5,14 @@
 
 void loadConfig();
 void clearConfig();
+void copyThreadInitialize();
+void add_shmem(u64 pid, SharedMemory* real_shmem, SharedMemory* fake_shmem);
+void del_shmem(u64 pid);
 
 enum IAppletResourceCmd : u32 {
     IAppletResource_GetSharedMemoryHandle = 0
 };
 
-
-// TODO: Actually need to do the interface stuff since it expects the constructor to do stuff or something like that.s
 
 class IAppletResourceMitmService : public IServiceObject {      
     public:
@@ -19,6 +20,7 @@ class IAppletResourceMitmService : public IServiceObject {
             /* ... */
         }
         
+        ~IAppletResourceMitmService();
 
 
         static void PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx);
@@ -30,4 +32,9 @@ class IAppletResourceMitmService : public IServiceObject {
         DEFINE_SERVICE_DISPATCH_TABLE {
             MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
         };
+
+    u64 pid;
+    Service iappletresource_handle;
+    SharedMemory real_sharedmem;
+    SharedMemory fake_sharedmem;
 };

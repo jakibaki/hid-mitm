@@ -11,9 +11,12 @@
 
 #include "hid_mitm_iappletresource.hpp"
 
-static SharedMemory fake_shmem = {0};
-static HidSharedMemory *fake_shmem_mem;
-static HidSharedMemory *real_shmem_mem;
+//static SharedMemory fake_shmem = {0};
+//static HidSharedMemory *fake_shmem_mem;
+//static HidSharedMemory *real_shmem_mem;
+
+static std::unordered_map<u64, std::pair<HidSharedMemory *, HidSharedMemory *>> sharedmems;
+
 static HidSharedMemory tmp_shmem_mem;
 
 static Thread shmem_patch_thread;
@@ -22,6 +25,24 @@ static std::unordered_map<u64, u64> rebind_config;
 // VALUE is the key that we want to get when we click KEY
 
 static Mutex configMutex;
+
+void add_shmem(u64 pid, SharedMemory* real_shmem, SharedMemory* fake_shmem)
+{
+    mutexLock(&shmem_mutex);
+    HidSharedMemory* real_mapped = (HidSharedMemory*) shmemGetAddr(real_shmem);
+    HidSharedMemory* fake_mapped = (HidSharedMemory*) shmemGetAddr(fake_shmem);
+    sharedmems[pid] = std::pair<HidSharedMemory*, HidSharedMemory*>(real_mapped, fake_mapped);
+    mutexUnlock(&shmem_mutex);
+}
+
+void del_shmem(u64 pid)
+{
+    mutexLock(&shmem_mutex);
+    if(sharedmems.find(pid) != sharedmems.end()) {
+        sharedmems.erase(pid);
+    }
+    mutexUnlock(&shmem_mutex);
+}
 
 std::string key_names[] = {"KEY_A", "KEY_B", "KEY_X", "KEY_Y", "KEY_LSTICK", "KEY_RSTICK", "KEY_L", "KEY_R", "KEY_ZL", "KEY_ZR", "KEY_PLUS", "KEY_MINUS", "KEY_DLEFT", "KEY_DUP", "KEY_DRIGHT", "KEY_DDOWN"};
 
@@ -103,7 +124,8 @@ void rebind_keys(int gamepad_ind)
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
 
         mutexLock(&configMutex);
-        if(rebind_config.size() > 0) {
+        if (rebind_config.size() > 0)
+        {
             u64 buttons = 0;
 
             for (auto it = rebind_config.begin(); it != rebind_config.end(); it++)
@@ -115,23 +137,20 @@ void rebind_keys(int gamepad_ind)
             }
             //buttons |= curTmpEnt->buttons & (KEY_JOYCON_LEFT | KEY_JOYCON_DOWN | KEY_JOYCON_RIGHT | KEY_JOYCON_UP | KEY_LSTICK_DOWN | KEY_LSTICK_RIGHT | KEY_LSTICK_LEFT | KEY_LSTICK_UP | KEY_RSTICK_DOWN | KEY_RSTICK_LEFT | KEY_RSTICK_RIGHT | KEY_RSTICK_UP);
             curTmpEnt->buttons = buttons;
-            
         }
         mutexUnlock(&configMutex);
     }
 }
 
-void get_from_udp() {
-    struct input_msg msg;
-    int res = poll_udp_input(&msg);
-    if(res != 0)
-        return;
-    
+void apply_fake_gamepad(struct input_msg msg)
+{
+
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         u32 controllers[] = {CONTROLLER_HANDHELD, CONTROLLER_PLAYER_1};
 
-        for(u32 gamepad = 0; gamepad < sizeof(controllers)/ sizeof(u32); gamepad++) {
+        for (u32 gamepad = 0; gamepad < sizeof(controllers) / sizeof(u32); gamepad++)
+        {
             HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[controllers[gamepad]].layouts[layout];
             int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
             HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
@@ -146,20 +165,35 @@ void get_from_udp() {
 
 void copy_thread(void *_)
 {
+
     u64 curTime = svcGetSystemTick();
     u64 oldTime;
 
+    loadConfig();
+
+    struct input_msg msg;
     while (true)
     {
         curTime = svcGetSystemTick();
 
-        tmp_shmem_mem = *real_shmem_mem;
+        int poll_res = poll_udp_input(&msg);
 
-        get_from_udp();
-        rebind_keys(CONTROLLER_HANDHELD);
-        rebind_keys(CONTROLLER_PLAYER_1);
+        mutexLock(&shmem_mutex);
+        for (auto it = sharedmems.begin(); it != sharedmems.end(); it++)
+        {
+            // TODO: Blacklist magic
 
-        *fake_shmem_mem = tmp_shmem_mem;
+            tmp_shmem_mem = *it->second.first;
+
+            if(poll_res == 0)
+                apply_fake_gamepad(msg);
+
+            rebind_keys(CONTROLLER_HANDHELD);
+            rebind_keys(CONTROLLER_PLAYER_1);
+
+            *it->second.second = tmp_shmem_mem;
+        }
+        mutexUnlock(&shmem_mutex);
 
         oldTime = curTime;
         curTime = svcGetSystemTick();
@@ -167,25 +201,23 @@ void copy_thread(void *_)
     }
 }
 
+void copyThreadInitialize()
+{
+    mutexInit(&configMutex);
+    loadConfig();
+    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x2C, 3);
+    threadStart(&shmem_patch_thread);
+}
+
+IAppletResourceMitmService::~IAppletResourceMitmService() {
+    del_shmem(this->pid);
+    customHidExit(&this->iappletresource_handle, &this->real_sharedmem, &this->fake_sharedmem);
+}
+
+
 Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand)
 {
-    if (fake_shmem.handle == 0)
-    {
-        mutexInit(&configMutex);
-        shmemCreate(&fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
-        shmemMap(&fake_shmem);
-        fake_shmem_mem = (HidSharedMemory *)shmemGetAddr(&fake_shmem);
-        real_shmem_mem = (HidSharedMemory *)customHidGetSharedmemAddr();
-
-
-        // Copy over for the first time to make sure that there never is a "bad" sharedmem to be seen
-        *fake_shmem_mem = *real_shmem_mem;
-        loadConfig();
-        threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x2C, 3);
-        threadStart(&shmem_patch_thread);
-    }
-
-    shmem_hand.SetValue(fake_shmem.handle);
+    shmem_hand.SetValue(this->fake_sharedmem.handle);
 
     return 0;
 }

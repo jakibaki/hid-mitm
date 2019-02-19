@@ -54,6 +54,7 @@
         "time.h": "c",
         "errno.h": "c",
         "switch.h": "c",
-        "hid.h": "c"
+        "hid.h": "c",
+        "hid_custom.h": "c"
     }
 }

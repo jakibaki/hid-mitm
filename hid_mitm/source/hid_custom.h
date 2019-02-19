@@ -1,12 +1,16 @@
+#pragma once
 #include <switch.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void customHidInitialize(Service* service);
-void* customHidGetSharedmemAddr();
-extern Service hid_iappletresource;
+
+void customHidSetup(Service* hid_service, Service* out_iappletresource, SharedMemory* out_real_shmem, SharedMemory* out_fake_shmem);
+void customHidExit(Service* iappletresource, SharedMemory* real_shmem, SharedMemory* fake_shmem);
+void customHidInitialize();
+
+extern Mutex shmem_mutex;
 
 #ifdef __cplusplus
 }

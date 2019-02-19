@@ -24,6 +24,7 @@
 
 #include "hid_mitm_service.hpp"
 #include "hid_mitm_iappletresource.hpp"
+#include "hid_custom.h"
 
 extern "C" {
     extern u32 __start__;
@@ -119,7 +120,8 @@ using HidMitmManager = WaitableManager<HidManagerOptions>;
 int main(int argc, char **argv)
 {
     consoleDebugInit(debugDevice_SVC);
-
+    customHidInitialize();
+    copyThreadInitialize();
 
     /* TODO: What's a good timeout value to use here? */
     auto server_manager = new HidMitmManager(1);

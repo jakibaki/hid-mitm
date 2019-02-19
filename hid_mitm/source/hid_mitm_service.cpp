@@ -26,7 +26,10 @@ void HidMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ct
 
 Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 aruid)
 {
-    customHidInitialize(this->forward_service.get());
+    Service out_iappletresource;
+    SharedMemory real_shmem, fake_shmem;
+    // This needs to be the first ipc being done since it relies on stuff that libstrato left for us. TODO: Do this properly
+    customHidSetup(this->forward_service.get(), &out_iappletresource, &real_shmem, &fake_shmem);
 
 
     std::shared_ptr<IAppletResourceMitmService> intf = nullptr;
@@ -34,6 +37,12 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
 
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
+
+    intf->pid = pid.pid;
+    intf->fake_sharedmem = fake_shmem;
+    intf->real_sharedmem = real_shmem;
+    intf->iappletresource_handle = out_iappletresource;
+    add_shmem(intf->pid, &intf->real_sharedmem, &intf->fake_sharedmem);
 
     out.SetValue(std::move(intf));
     if (out.IsDomain()) {
