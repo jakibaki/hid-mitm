@@ -135,7 +135,11 @@ void rebind_keys(int gamepad_ind)
                     buttons |= it->second;
                 }
             }
-            //buttons |= curTmpEnt->buttons & (KEY_JOYCON_LEFT | KEY_JOYCON_DOWN | KEY_JOYCON_RIGHT | KEY_JOYCON_UP | KEY_LSTICK_DOWN | KEY_LSTICK_RIGHT | KEY_LSTICK_LEFT | KEY_LSTICK_UP | KEY_RSTICK_DOWN | KEY_RSTICK_LEFT | KEY_RSTICK_RIGHT | KEY_RSTICK_UP);
+
+            // lstick rstick digital stuff
+            for(int i = 16; i <= 27; i++) {
+                buttons |= curTmpEnt->buttons & BIT(i);
+            }
             curTmpEnt->buttons = buttons;
         }
         mutexUnlock(&configMutex);
