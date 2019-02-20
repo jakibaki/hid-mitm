@@ -101,7 +101,6 @@ void __appInit(void) {
 
 void __appExit(void) {
     /* Cleanup services. */
-    hidExit();
     fsdevUnmountAll();
     fsExit();
     smExit();

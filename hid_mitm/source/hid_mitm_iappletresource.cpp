@@ -21,7 +21,8 @@ static HidSharedMemory tmp_shmem_mem;
 
 static Thread shmem_patch_thread;
 
-static std::unordered_map<u64, u64> rebind_config;
+//static std::unordered_map<u64, u64> rebind_config;
+static std::vector<std::pair<u64, u64>> rebind_config;
 // VALUE is the key that we want to get when we click KEY
 
 static Mutex configMutex;
@@ -90,7 +91,7 @@ static int handler(void *dummy, const char *section, const char *name,
     {
         return -1;
     }
-    rebind_config[key] = val;
+    rebind_config.push_back(std::pair<u64, u64>(key, val));
     return 0;
 }
 
@@ -167,6 +168,17 @@ void apply_fake_gamepad(struct input_msg msg)
     }
 }
 
+void shmem_copy(HidSharedMemory* source, HidSharedMemory* dest)
+{
+    memcpy(dest->controllers, source->controllers, sizeof(dest->controllers));
+
+    // Apparently unused
+    //memcpy(dest->controllerSerials, source->controllerSerials, sizeof(dest->controllerSerials));
+    dest->keyboard = source->keyboard;
+    dest->mouse = source->mouse;
+    dest->touchscreen = source->touchscreen;
+}
+
 void copy_thread(void *_)
 {
 
@@ -187,7 +199,7 @@ void copy_thread(void *_)
         {
             // TODO: Blacklist magic
 
-            tmp_shmem_mem = *it->second.first;
+            shmem_copy(it->second.first, &tmp_shmem_mem);
 
             if(poll_res == 0)
                 apply_fake_gamepad(msg);
@@ -195,13 +207,14 @@ void copy_thread(void *_)
             rebind_keys(CONTROLLER_HANDHELD);
             rebind_keys(CONTROLLER_PLAYER_1);
 
-            *it->second.second = tmp_shmem_mem;
+            shmem_copy(&tmp_shmem_mem, it->second.second);
         }
         mutexUnlock(&shmem_mutex);
 
         oldTime = curTime;
         curTime = svcGetSystemTick();
-        svcSleepThread(std::max(1000L, (s64)(16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
+        //svcSleepThread(std::max(1000L, (s64)(16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
+        svcSleepThread(1e+9L / 60);
     }
 }
 
@@ -209,7 +222,7 @@ void copyThreadInitialize()
 {
     mutexInit(&configMutex);
     loadConfig();
-    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x2C, 3);
+    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x3E, 3);
     threadStart(&shmem_patch_thread);
 }
 
