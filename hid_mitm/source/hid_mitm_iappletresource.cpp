@@ -15,6 +15,7 @@
 //static HidSharedMemory *fake_shmem_mem;
 //static HidSharedMemory *real_shmem_mem;
 
+// TODO: Currently assumes one sharedmem per pid.
 static std::unordered_map<u64, std::pair<HidSharedMemory *, HidSharedMemory *>> sharedmems;
 
 static HidSharedMemory tmp_shmem_mem;
@@ -181,16 +182,11 @@ void shmem_copy(HidSharedMemory* source, HidSharedMemory* dest)
 
 void copy_thread(void *_)
 {
-
-    u64 curTime = svcGetSystemTick();
-    u64 oldTime;
-
     loadConfig();
 
     struct input_msg msg;
     while (true)
     {
-        curTime = svcGetSystemTick();
 
         int poll_res = poll_udp_input(&msg);
 
@@ -207,14 +203,15 @@ void copy_thread(void *_)
             rebind_keys(CONTROLLER_HANDHELD);
             rebind_keys(CONTROLLER_PLAYER_1);
 
+            svcSleepThread(1e+9L / 60 / sharedmems.size());
+
             shmem_copy(&tmp_shmem_mem, it->second.second);
         }
-        mutexUnlock(&shmem_mutex);
 
-        oldTime = curTime;
-        curTime = svcGetSystemTick();
-        //svcSleepThread(std::max(1000L, (s64)(16666666 - ((curTime - oldTime) * 1e+9L / 19200000))));
-        svcSleepThread(1e+9L / 60);
+        if(sharedmems.size() == 0) {
+            svcSleepThread(1e+9L / 60);
+        }
+        mutexUnlock(&shmem_mutex);
     }
 }
 
