@@ -216,12 +216,26 @@ void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
 
 void copy_thread(void *_)
 {
+    Result rc;
+
+    rc = viInitialize(ViServiceType_System);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+
+    ViDisplay disp;
+    rc = viOpenDefaultDisplay(&disp);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+    Event event;
+    rc = viGetDisplayVsyncEvent(&disp, &event);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+
     loadConfig();
 
     struct input_msg msg;
     while (true)
     {
-
         int poll_res = poll_udp_input(&msg);
 
         mutexLock(&shmem_mutex);
@@ -230,25 +244,23 @@ void copy_thread(void *_)
             shmem_copy(it->second.first, &tmp_shmem_mem);
 
             if (poll_res == 0)
-            {
-                int fake_gamepad = apply_fake_gamepad(msg);
-            }
+                apply_fake_gamepad(msg);
+
             for (int i = CONTROLLER_PLAYER_1; i <= CONTROLLER_HANDHELD; i++)
             {
                 rebind_keys(i);
             }
 
-            svcSleepThread(1e+9L / 60 / sharedmems.size());
-
             shmem_copy(&tmp_shmem_mem, it->second.second);
         }
-
-        if (sharedmems.size() == 0)
-        {
-            svcSleepThread(1e+9L / 60);
-        }
         mutexUnlock(&shmem_mutex);
+        
+        rc = eventWait(&event, 0xFFFFFFFFFFF);
+        if(R_FAILED(rc))
+            fatalSimple(rc);
     }
+
+    viExit();
 }
 
 void copyThreadInitialize()
