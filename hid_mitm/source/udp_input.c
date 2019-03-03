@@ -55,7 +55,7 @@ void setup_socket()
 }
 
 static u32 curIP = NULL;
-static int failed = 30;
+static int failed = 31;
 static struct input_msg cached_msg = {0};
 int poll_udp_input(struct input_msg* buf) {
     // Reduce the poll frequency to lower load.
