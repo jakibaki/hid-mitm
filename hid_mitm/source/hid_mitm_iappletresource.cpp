@@ -28,19 +28,20 @@ static std::vector<std::pair<u64, u64>> rebind_config;
 
 static Mutex configMutex;
 
-void add_shmem(u64 pid, SharedMemory* real_shmem, SharedMemory* fake_shmem)
+void add_shmem(u64 pid, SharedMemory *real_shmem, SharedMemory *fake_shmem)
 {
     mutexLock(&shmem_mutex);
-    HidSharedMemory* real_mapped = (HidSharedMemory*) shmemGetAddr(real_shmem);
-    HidSharedMemory* fake_mapped = (HidSharedMemory*) shmemGetAddr(fake_shmem);
-    sharedmems[pid] = std::pair<HidSharedMemory*, HidSharedMemory*>(real_mapped, fake_mapped);
+    HidSharedMemory *real_mapped = (HidSharedMemory *)shmemGetAddr(real_shmem);
+    HidSharedMemory *fake_mapped = (HidSharedMemory *)shmemGetAddr(fake_shmem);
+    sharedmems[pid] = std::pair<HidSharedMemory *, HidSharedMemory *>(real_mapped, fake_mapped);
     mutexUnlock(&shmem_mutex);
 }
 
 void del_shmem(u64 pid)
 {
     mutexLock(&shmem_mutex);
-    if(sharedmems.find(pid) != sharedmems.end()) {
+    if (sharedmems.find(pid) != sharedmems.end())
+    {
         sharedmems.erase(pid);
     }
     mutexUnlock(&shmem_mutex);
@@ -117,6 +118,10 @@ void clearConfig()
 
 void rebind_keys(int gamepad_ind)
 {
+    if (tmp_shmem_mem.controllers[gamepad_ind].unk_1[0] == 0)
+    {
+        return;
+    }
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
@@ -139,7 +144,8 @@ void rebind_keys(int gamepad_ind)
             }
 
             // lstick rstick digital stuff
-            for(int i = 16; i <= 27; i++) {
+            for (int i = 16; i <= 27; i++)
+            {
                 buttons |= curTmpEnt->buttons & BIT(i);
             }
             curTmpEnt->buttons = buttons;
@@ -148,28 +154,56 @@ void rebind_keys(int gamepad_ind)
     }
 }
 
-void apply_fake_gamepad(struct input_msg msg)
+struct hid_unk_section
 {
+    u64 type;
+    u64 unk;
+};
+
+int ent = 0;
+int apply_fake_gamepad(struct input_msg msg)
+{
+    int gamepad;
+    for (gamepad = CONTROLLER_PLAYER_1; gamepad <= CONTROLLER_PLAYER_8; gamepad++)
+    {
+        if (tmp_shmem_mem.controllers[gamepad].unk_1[0] == 0)
+            break;
+    }
+
+    memset(tmp_shmem_mem.controllers[gamepad].unk_1, 0, 0x40);
+    memset(&tmp_shmem_mem.controllers[gamepad].header, 0, sizeof(HidControllerHeader));
+
+    // Pro controller magic
+    tmp_shmem_mem.controllers[gamepad].unk_1[0] = 0x01;
+
+    tmp_shmem_mem.controllers[gamepad].header.singleColorBody = 0;
+    tmp_shmem_mem.controllers[gamepad].header.singleColorButtons = 0xFFFFFFFF;
+
+    //Joycon: 0x20000004
+    //Pro controller: 0x20000001
+    tmp_shmem_mem.controllers[gamepad].header.type = 0x20000001;
 
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
-        u32 controllers[] = {CONTROLLER_HANDHELD, CONTROLLER_PLAYER_1};
+        HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad].layouts[layout];
+        currentTmpLayout->header.latestEntry = ent;
+        currentTmpLayout->header.numEntries = 17;
+        currentTmpLayout->header.maxEntryIndex = 16;
 
-        for (u32 gamepad = 0; gamepad < sizeof(controllers) / sizeof(u32); gamepad++)
-        {
-            HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[controllers[gamepad]].layouts[layout];
-            int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
-            HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
-            curTmpEnt->buttons = msg.keys;
-            curTmpEnt->joysticks[0].dx = msg.joy_l_x;
-            curTmpEnt->joysticks[0].dy = msg.joy_l_y;
-            curTmpEnt->joysticks[1].dx = msg.joy_r_x;
-            curTmpEnt->joysticks[1].dy = msg.joy_r_y;
-        }
+        HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[ent];
+        curTmpEnt->connectionState = 1;
+        curTmpEnt->buttons = msg.keys;
+        curTmpEnt->joysticks[0].dx = msg.joy_l_x;
+        curTmpEnt->joysticks[0].dy = msg.joy_l_y;
+        curTmpEnt->joysticks[1].dx = msg.joy_r_x;
+        curTmpEnt->joysticks[1].dy = msg.joy_r_y;
     }
+
+    ent = (ent + 1) % 17;
+    return gamepad;
 }
 
-void shmem_copy(HidSharedMemory* source, HidSharedMemory* dest)
+void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
 {
     memcpy(dest->controllers, source->controllers, sizeof(dest->controllers));
 
@@ -182,37 +216,51 @@ void shmem_copy(HidSharedMemory* source, HidSharedMemory* dest)
 
 void copy_thread(void *_)
 {
+    Result rc;
+
+    rc = viInitialize(ViServiceType_System);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+
+    ViDisplay disp;
+    rc = viOpenDefaultDisplay(&disp);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+    Event event;
+    rc = viGetDisplayVsyncEvent(&disp, &event);
+    if(R_FAILED(rc))
+        fatalSimple(rc);
+
     loadConfig();
 
     struct input_msg msg;
     while (true)
     {
-
         int poll_res = poll_udp_input(&msg);
 
         mutexLock(&shmem_mutex);
         for (auto it = sharedmems.begin(); it != sharedmems.end(); it++)
         {
-            // TODO: Blacklist magic
-
             shmem_copy(it->second.first, &tmp_shmem_mem);
 
-            if(poll_res == 0)
+            if (poll_res == 0)
                 apply_fake_gamepad(msg);
 
-            rebind_keys(CONTROLLER_HANDHELD);
-            rebind_keys(CONTROLLER_PLAYER_1);
-
-            svcSleepThread(1e+9L / 60 / sharedmems.size());
+            for (int i = CONTROLLER_PLAYER_1; i <= CONTROLLER_HANDHELD; i++)
+            {
+                rebind_keys(i);
+            }
 
             shmem_copy(&tmp_shmem_mem, it->second.second);
         }
-
-        if(sharedmems.size() == 0) {
-            svcSleepThread(1e+9L / 60);
-        }
         mutexUnlock(&shmem_mutex);
+        
+        rc = eventWait(&event, 0xFFFFFFFFFFF);
+        if(R_FAILED(rc))
+            fatalSimple(rc);
     }
+
+    viExit();
 }
 
 void copyThreadInitialize()
@@ -223,11 +271,11 @@ void copyThreadInitialize()
     threadStart(&shmem_patch_thread);
 }
 
-IAppletResourceMitmService::~IAppletResourceMitmService() {
+IAppletResourceMitmService::~IAppletResourceMitmService()
+{
     del_shmem(this->pid);
     customHidExit(&this->iappletresource_handle, &this->real_sharedmem, &this->fake_sharedmem);
 }
-
 
 Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand)
 {
