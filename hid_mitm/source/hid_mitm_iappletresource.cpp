@@ -118,7 +118,7 @@ void clearConfig()
 
 void rebind_keys(int gamepad_ind)
 {
-    if (tmp_shmem_mem.controllers[gamepad].unk_1[0] == 0)
+    if (tmp_shmem_mem.controllers[gamepad_ind].unk_1[0] == 0)
     {
         return;
     }
