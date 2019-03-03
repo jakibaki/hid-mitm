@@ -62,7 +62,7 @@ s64 get_key_ind(std::string str)
 }
 
 /* sample config:
-; Gamepad-rebind config. Currently only supports player one rebinding.
+; Gamepad-rebind config. Currently always rebinds for all players, no individual config.
 ; VALUE is the button that gets registered when KEY is held down
 [player1]
 KEY_A = KEY_A
