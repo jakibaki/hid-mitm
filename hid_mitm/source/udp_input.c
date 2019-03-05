@@ -56,14 +56,25 @@ void setup_socket()
 
 static u32 curIP = 0;
 static int failed = 31;
+static int counter = 0;
 static struct input_msg cached_msg = {0};
 int poll_udp_input(struct input_msg* buf) {
+    if(++counter != 5) {
+        if(failed > 30)
+            return -1;
+        *buf = cached_msg;
+        return 0;
+    }
+    counter = 0;
+
+
     // Reduce the poll frequency to lower load.
     // If we're not "connected" right now we only check around every second
     if(failed > 30 && failed % 60 != 0) {
         failed++;
         return -1;
     }
+
 
     if(curIP != gethostid()) {
         setup_socket();

@@ -122,6 +122,7 @@ void rebind_keys(int gamepad_ind)
     {
         return;
     }
+    mutexLock(&configMutex);
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad_ind].layouts[layout];
@@ -129,8 +130,9 @@ void rebind_keys(int gamepad_ind)
         int cur_tmp_ent_ind = currentTmpLayout->header.latestEntry;
 
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[cur_tmp_ent_ind];
+        if (curTmpEnt->connectionState == 0)
+            continue;
 
-        mutexLock(&configMutex);
         if (rebind_config.size() > 0)
         {
             u64 buttons = 0;
@@ -150,8 +152,8 @@ void rebind_keys(int gamepad_ind)
             }
             curTmpEnt->buttons = buttons;
         }
-        mutexUnlock(&configMutex);
     }
+    mutexUnlock(&configMutex);
 }
 
 struct hid_unk_section
@@ -169,7 +171,6 @@ int apply_fake_gamepad(struct input_msg msg)
             break;
     }
 
-
     memset(tmp_shmem_mem.controllers[gamepad].unk_1, 0, 0x40);
     memset(&tmp_shmem_mem.controllers[gamepad].header, 0, sizeof(HidControllerHeader));
 
@@ -186,7 +187,7 @@ int apply_fake_gamepad(struct input_msg msg)
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad].layouts[layout];
-        
+
         int ent = currentTmpLayout->header.latestEntry;
 
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[ent];
@@ -202,13 +203,20 @@ int apply_fake_gamepad(struct input_msg msg)
 
 void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
 {
-    memcpy(dest->controllers, source->controllers, sizeof(dest->controllers));
+    //memcpy(dest->controllers, source->controllers, sizeof(dest->controllers));
 
     // Apparently unused
     //memcpy(dest->controllerSerials, source->controllerSerials, sizeof(dest->controllerSerials));
-    dest->keyboard = source->keyboard;
-    dest->mouse = source->mouse;
-    dest->touchscreen = source->touchscreen;
+
+    memcpy(&dest->touchscreen, &source->touchscreen, sizeof(source->touchscreen) - sizeof(source->touchscreen.padding));
+    memcpy(&dest->mouse, &source->mouse, sizeof(source->mouse) - sizeof(source->mouse.padding));
+    memcpy(&dest->keyboard, &source->keyboard, sizeof(source->keyboard) - sizeof(source->keyboard.padding));
+    for (int i = 0; i < 10; i++)
+    {
+        // Only copy used gamepads
+        if (dest->controllers[i].unk_1[0] != 0 || source->controllers[i].unk_1[0] != 0)
+            memcpy(&dest->controllers[i], &source->controllers[i], sizeof(source->controllers[i]) - sizeof(source->controllers[i].unk_2)); // unk_2 is apparently unused and is huge
+    }
 }
 
 void copy_thread(void *_)
@@ -216,16 +224,17 @@ void copy_thread(void *_)
     Result rc;
 
     rc = viInitialize(ViServiceType_System);
-    if(R_FAILED(rc))
+    if (R_FAILED(rc))
         fatalSimple(rc);
 
     ViDisplay disp;
     rc = viOpenDefaultDisplay(&disp);
-    if(R_FAILED(rc))
+    if (R_FAILED(rc))
         fatalSimple(rc);
+
     Event event;
     rc = viGetDisplayVsyncEvent(&disp, &event);
-    if(R_FAILED(rc))
+    if (R_FAILED(rc))
         fatalSimple(rc);
 
     loadConfig();
@@ -234,11 +243,13 @@ void copy_thread(void *_)
     while (true)
     {
         int poll_res = poll_udp_input(&msg);
-        
+        svcSleepThread(-1);
+
         mutexLock(&shmem_mutex);
         for (auto it = sharedmems.begin(); it != sharedmems.end(); it++)
         {
             shmem_copy(it->second.first, &tmp_shmem_mem);
+            svcSleepThread(-1);
 
             if (poll_res == 0)
                 apply_fake_gamepad(msg);
@@ -247,15 +258,20 @@ void copy_thread(void *_)
             {
                 rebind_keys(i);
             }
-
             shmem_copy(&tmp_shmem_mem, it->second.second);
+            svcSleepThread(-1);
         }
 
         mutexUnlock(&shmem_mutex);
-        
-        rc = eventWait(&event, 0xFFFFFFFFFFF);
-        if(R_FAILED(rc))
-            fatalSimple(rc);
+
+
+        // TODO: This timing seems to be bad. The original hid seems to tick differently which results in smo sound being messed up sometimes
+        //rc = eventWait(&event, 0xFFFFFFFFFFF);
+        //if (R_FAILED(rc))
+        //    fatalSimple(rc);
+
+        // Sleeping as here seems to mostly fix it but still not perfect
+        svcSleepThread(3333333);
     }
 
     viCloseDisplay(&disp);
@@ -266,7 +282,7 @@ void copyThreadInitialize()
 {
     mutexInit(&configMutex);
     loadConfig();
-    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x3E, 3);
+    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x21, 3);
     threadStart(&shmem_patch_thread);
 }
 
