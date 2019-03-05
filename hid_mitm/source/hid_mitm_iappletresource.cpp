@@ -160,7 +160,6 @@ struct hid_unk_section
     u64 unk;
 };
 
-int ent = 0;
 int apply_fake_gamepad(struct input_msg msg)
 {
     int gamepad;
@@ -169,6 +168,7 @@ int apply_fake_gamepad(struct input_msg msg)
         if (tmp_shmem_mem.controllers[gamepad].unk_1[0] == 0)
             break;
     }
+
 
     memset(tmp_shmem_mem.controllers[gamepad].unk_1, 0, 0x40);
     memset(&tmp_shmem_mem.controllers[gamepad].header, 0, sizeof(HidControllerHeader));
@@ -186,9 +186,8 @@ int apply_fake_gamepad(struct input_msg msg)
     for (int layout = 0; layout < LAYOUT_DEFAULT + 1; layout++)
     {
         HidControllerLayout *currentTmpLayout = &tmp_shmem_mem.controllers[gamepad].layouts[layout];
-        currentTmpLayout->header.latestEntry = ent;
-        currentTmpLayout->header.numEntries = 17;
-        currentTmpLayout->header.maxEntryIndex = 16;
+        
+        int ent = currentTmpLayout->header.latestEntry;
 
         HidControllerInputEntry *curTmpEnt = &currentTmpLayout->entries[ent];
         curTmpEnt->connectionState = 1;
@@ -198,8 +197,6 @@ int apply_fake_gamepad(struct input_msg msg)
         curTmpEnt->joysticks[1].dx = msg.joy_r_x;
         curTmpEnt->joysticks[1].dy = msg.joy_r_y;
     }
-
-    ent = (ent + 1) % 17;
     return gamepad;
 }
 
@@ -237,7 +234,7 @@ void copy_thread(void *_)
     while (true)
     {
         int poll_res = poll_udp_input(&msg);
-
+        
         mutexLock(&shmem_mutex);
         for (auto it = sharedmems.begin(); it != sharedmems.end(); it++)
         {
@@ -253,6 +250,7 @@ void copy_thread(void *_)
 
             shmem_copy(&tmp_shmem_mem, it->second.second);
         }
+
         mutexUnlock(&shmem_mutex);
         
         rc = eventWait(&event, 0xFFFFFFFFFFF);
@@ -260,6 +258,7 @@ void copy_thread(void *_)
             fatalSimple(rc);
     }
 
+    viCloseDisplay(&disp);
     viExit();
 }
 
