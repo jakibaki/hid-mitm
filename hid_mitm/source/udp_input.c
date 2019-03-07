@@ -60,7 +60,7 @@ static int counter = 0;
 static struct input_msg cached_msg = {0};
 u64 last_time;
 int poll_udp_input(struct input_msg* buf) {
-    if(++counter != 5) {
+    if(++counter != 3) {
         if(failed > 30)
             return -1;
         *buf = cached_msg;

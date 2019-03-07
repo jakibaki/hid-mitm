@@ -81,11 +81,19 @@ KEY_DLEFT = KEY_DLEFT
 KEY_DUP = KEY_DUP
 KEY_DRIGHT = KEY_DRIGHT
 KEY_DDOWN = KEY_DDOWN
+[network]
+enabled = 1
 */
+
+int networking_enabled = 0;
 
 static int handler(void *dummy, const char *section, const char *name,
                    const char *value)
 {
+    if(!strcmp(name, "enabled")) {
+        networking_enabled = atoi(value);
+    }
+
     s64 key = get_key_ind(name);
     s64 val = get_key_ind(value);
 
@@ -218,6 +226,9 @@ void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
     }
 }
 
+#define WANT_TIME 96000
+// Official software ticks 200 times/second
+
 void copy_thread(void *_)
 {
     Result rc;
@@ -241,7 +252,12 @@ void copy_thread(void *_)
     struct input_msg msg;
     while (true)
     {
-        int poll_res = poll_udp_input(&msg);
+        u64 curTime = svcGetSystemTick();
+
+        // TODO: put this in a seperate thread
+        int poll_res = -1;
+        if(networking_enabled)
+            poll_res = poll_udp_input(&msg);
         svcSleepThread(-1);
 
         mutexLock(&shmem_mutex);
@@ -261,16 +277,17 @@ void copy_thread(void *_)
             svcSleepThread(-1);
         }
 
+        if(sharedmems.empty()) {
+            mutexUnlock(&shmem_mutex);
+            svcSleepThread(1e+9L/60);
+            continue;
+        }
         mutexUnlock(&shmem_mutex);
 
-
-        // TODO: This timing seems to be bad. The original hid seems to tick differently which results in smo sound being messed up sometimes
-        //rc = eventWait(&event, 0xFFFFFFFFFFF);
-        //if (R_FAILED(rc))
-        //    fatalSimple(rc);
-
-        // Sleeping as here seems to mostly fix it but still not perfect
-        svcSleepThread(3333333);
+        s64 time_rest = WANT_TIME - (svcGetSystemTick() - curTime);
+        if(time_rest > 0) {
+            svcSleepThread((time_rest * 1e+9L) / 19200000);
+        }
     }
 
     /*viCloseDisplay(&disp);

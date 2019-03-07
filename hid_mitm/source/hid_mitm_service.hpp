@@ -24,7 +24,7 @@ enum HidCmd : u32
 {
     HidCmd_CreateAppletResource = 0,
     HidCmd_ReloadHidMitmConfig = 65000,
-    HidCmd_ClearHidMitmConfig = 65001
+    HidCmd_ClearHidMitmConfig = 65001,
 };
 
 class HidMitmService : public IMitmServiceObject
