@@ -236,8 +236,6 @@ void net_thread(void* _)
     struct input_msg tmp_pkg;
     while (true)
     {
-        u64 curTime = svcGetSystemTick();
-
         if (networking_enabled)
         {
             int poll_res = poll_udp_input(&tmp_pkg);
@@ -250,8 +248,13 @@ void net_thread(void* _)
             else
             {
                 cur_fakegamepad_state.magic = 0;
+                svcSleepThread(1e+7l);
             }
             mutexUnlock(&pkgMutex);
+
+            svcSleepThread(-1);
+        } else {
+            svcSleepThread(1e+9l);
         }
     }
 }
