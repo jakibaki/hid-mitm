@@ -203,8 +203,7 @@ int apply_fake_gamepad(struct input_msg msg)
 
 void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
 {
-    //memcpy(dest->controllers, source->controllers, sizeof(dest->controllers));
-
+    
     // Apparently unused
     //memcpy(dest->controllerSerials, source->controllerSerials, sizeof(dest->controllerSerials));
 
@@ -223,7 +222,7 @@ void copy_thread(void *_)
 {
     Result rc;
 
-    rc = viInitialize(ViServiceType_System);
+    /*rc = viInitialize(ViServiceType_System);
     if (R_FAILED(rc))
         fatalSimple(rc);
 
@@ -235,7 +234,7 @@ void copy_thread(void *_)
     Event event;
     rc = viGetDisplayVsyncEvent(&disp, &event);
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalSimple(rc);*/
 
     loadConfig();
 
@@ -274,8 +273,8 @@ void copy_thread(void *_)
         svcSleepThread(3333333);
     }
 
-    viCloseDisplay(&disp);
-    viExit();
+    /*viCloseDisplay(&disp);
+    viExit();*/
 }
 
 void copyThreadInitialize()

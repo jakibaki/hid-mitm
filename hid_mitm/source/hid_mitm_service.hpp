@@ -17,6 +17,7 @@
 #pragma once
 #include <switch.h>
 #include <stratosphere.hpp>
+#include <stratosphere/utilities.hpp>
 #include "hid_mitm_iappletresource.hpp"
 
 enum HidCmd : u32
@@ -36,7 +37,19 @@ class HidMitmService : public IMitmServiceObject
 
     static bool ShouldMitm(u64 pid, u64 tid)
     {
-        return true;
+        // We want to be loaded into as few as possible processess to save ram+cpu-time
+
+        if(IsApplicationTid(tid)) 
+        {
+            return true;
+        }
+
+        if(tid >= 0x0100000000001000ul && tid <= 0x0100000000001FFFul) 
+        {
+            return tid != 0x010000000000100Cul;
+        }
+
+        return false;
     }
 
     static void PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx);

@@ -58,6 +58,7 @@ static u32 curIP = 0;
 static int failed = 31;
 static int counter = 0;
 static struct input_msg cached_msg = {0};
+u64 last_time;
 int poll_udp_input(struct input_msg* buf) {
     if(++counter != 5) {
         if(failed > 30)
@@ -67,6 +68,14 @@ int poll_udp_input(struct input_msg* buf) {
     }
     counter = 0;
 
+    // Wakeup detection
+    u64 tmp_time = svcGetSystemTick();
+    if(tmp_time - last_time > (19200000/10)) {
+        setup_socket();
+        curIP = gethostid();
+    }
+    last_time = tmp_time;
+
 
     // Reduce the poll frequency to lower load.
     // If we're not "connected" right now we only check around every second
@@ -75,11 +84,11 @@ int poll_udp_input(struct input_msg* buf) {
         return -1;
     }
 
-
     if(curIP != gethostid()) {
         setup_socket();
         curIP = gethostid();
     }
+
 
     socklen_t len;
     int n; 
