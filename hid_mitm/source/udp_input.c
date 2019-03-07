@@ -71,8 +71,10 @@ int poll_udp_input(struct input_msg* buf) {
     // Wakeup detection
     u64 tmp_time = svcGetSystemTick();
     if(tmp_time - last_time > (19200000/10)) {
+        svcSleepThread(5e+8L);
         setup_socket();
         curIP = gethostid();
+        tmp_time = svcGetSystemTick();
     }
     last_time = tmp_time;
 
