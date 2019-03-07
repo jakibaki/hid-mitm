@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 try {
-                    sleep(1000/50);
+                    sleep(1000/60);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
