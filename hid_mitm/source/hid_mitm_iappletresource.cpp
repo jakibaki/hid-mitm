@@ -20,14 +20,13 @@ static std::unordered_map<u64, std::pair<HidSharedMemory *, HidSharedMemory *>> 
 
 static HidSharedMemory tmp_shmem_mem;
 
-static Thread shmem_patch_thread, network_thread;
+static Thread shmem_patch_thread;
 
 //static std::unordered_map<u64, u64> rebind_config;
 static std::vector<std::pair<u64, u64>> rebind_config;
 // VALUE is the key that we want to get when we click KEY
 
-static Mutex configMutex, pkgMutex;
-static struct input_msg cur_fakegamepad_state = {0};
+static Mutex configMutex;
 
 void add_shmem(u64 pid, SharedMemory *real_shmem, SharedMemory *fake_shmem)
 {
@@ -91,8 +90,7 @@ int networking_enabled = 0;
 static int handler(void *dummy, const char *section, const char *name,
                    const char *value)
 {
-    if (!strcmp(name, "enabled"))
-    {
+    if(!strcmp(name, "enabled")) {
         networking_enabled = atoi(value);
     }
 
@@ -174,9 +172,6 @@ struct hid_unk_section
 
 int apply_fake_gamepad(struct input_msg msg)
 {
-    if(msg.magic != INPUT_MSG_MAGIC)
-        return -1;
-
     int gamepad;
     for (gamepad = CONTROLLER_PLAYER_1; gamepad <= CONTROLLER_PLAYER_8; gamepad++)
     {
@@ -216,7 +211,7 @@ int apply_fake_gamepad(struct input_msg msg)
 
 void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
 {
-
+    
     // Apparently unused
     //memcpy(dest->controllerSerials, source->controllerSerials, sizeof(dest->controllerSerials));
 
@@ -231,35 +226,10 @@ void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
     }
 }
 
-void net_thread(void* _)
-{
-    struct input_msg tmp_pkg;
-    while (true)
-    {
-        u64 curTime = svcGetSystemTick();
-
-        if (networking_enabled)
-        {
-            int poll_res = poll_udp_input(&tmp_pkg);
-
-            mutexLock(&pkgMutex);
-            if (poll_res == 0)
-            {
-                cur_fakegamepad_state = tmp_pkg;
-            }
-            else
-            {
-                cur_fakegamepad_state.magic = 0;
-            }
-            mutexUnlock(&pkgMutex);
-        }
-    }
-}
-
 #define WANT_TIME 96000
 // Official software ticks 200 times/second
 
-void copy_thread(void* _)
+void copy_thread(void *_)
 {
     Result rc;
 
@@ -279,43 +249,43 @@ void copy_thread(void* _)
 
     loadConfig();
 
+    struct input_msg msg;
     while (true)
     {
         u64 curTime = svcGetSystemTick();
 
-        mutexLock(&shmem_mutex);
-        mutexLock(&pkgMutex);
+        // TODO: put this in a seperate thread
+        int poll_res = -1;
+        if(networking_enabled)
+            poll_res = poll_udp_input(&msg);
+        svcSleepThread(-1);
 
+        mutexLock(&shmem_mutex);
         for (auto it = sharedmems.begin(); it != sharedmems.end(); it++)
         {
             shmem_copy(it->second.first, &tmp_shmem_mem);
             svcSleepThread(-1);
 
-            if (networking_enabled)
-            {
-                apply_fake_gamepad(cur_fakegamepad_state);
-            }
+            if (poll_res == 0)
+                apply_fake_gamepad(msg);
 
             for (int i = CONTROLLER_PLAYER_1; i <= CONTROLLER_HANDHELD; i++)
             {
                 rebind_keys(i);
             }
-
             shmem_copy(&tmp_shmem_mem, it->second.second);
+            svcSleepThread(-1);
         }
-        mutexUnlock(&pkgMutex);
 
-        if (sharedmems.empty())
-        {
+        if(sharedmems.empty()) {
             mutexUnlock(&shmem_mutex);
-            svcSleepThread(1e+9L / 60);
+            svcSleepThread(1e+9L/60);
             continue;
         }
         mutexUnlock(&shmem_mutex);
 
         s64 time_rest = WANT_TIME - (svcGetSystemTick() - curTime);
-        if (time_rest > 0)
-        {
+        if(time_rest > 0) {
             svcSleepThread((time_rest * 1e+9L) / 19200000);
         }
     }
@@ -327,13 +297,9 @@ void copy_thread(void* _)
 void copyThreadInitialize()
 {
     mutexInit(&configMutex);
-    mutexInit(&pkgMutex);
     loadConfig();
     threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x21, 3);
     threadStart(&shmem_patch_thread);
-
-    threadCreate(&network_thread, net_thread, NULL, 0x1000, 0x30, 3);
-    threadStart(&network_thread);
 }
 
 IAppletResourceMitmService::~IAppletResourceMitmService()

@@ -65,7 +65,7 @@ static const SocketInitConfig sockInitConf = {
     // We're not using tcp anyways
 
     .udp_tx_buf_size = 0x2400,
-    .udp_rx_buf_size = 0x3400,
+    .udp_rx_buf_size = 0x34,
 
     .sb_efficiency = 2,
 
