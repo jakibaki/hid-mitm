@@ -66,24 +66,24 @@ s64 get_key_ind(std::string str)
 ; Gamepad-rebind config. Currently always rebinds for all players, no individual config.
 ; VALUE is the button that gets registered when KEY is held down
 [player1]
-KEY_A = KEY_A
-KEY_B = KEY_B
-KEY_X = KEY_X
-KEY_Y = KEY_Y
-KEY_LSTICK = KEY_LSTICK
-KEY_RSTICK = KEY_RSTICK
-KEY_L = KEY_L
-KEY_R = KEY_R
-KEY_ZL = KEY_ZL
-KEY_ZR = KEY_ZR
-KEY_PLUS = KEY_PLUS
-KEY_MINUS = KEY_MINUS
-KEY_DLEFT = KEY_DLEFT
-KEY_DUP = KEY_DUP
-KEY_DRIGHT = KEY_DRIGHT
-KEY_DDOWN = KEY_DDOWN
+KEY_A=KEY_A
+KEY_B=KEY_B
+KEY_X=KEY_X
+KEY_Y=KEY_Y
+KEY_LSTICK=KEY_LSTICK
+KEY_RSTICK=KEY_RSTICK
+KEY_L=KEY_L
+KEY_R=KEY_R
+KEY_ZL=KEY_ZL
+KEY_ZR=KEY_ZR
+KEY_PLUS=KEY_PLUS
+KEY_MINUS=KEY_MINUS
+KEY_DLEFT=KEY_DLEFT
+KEY_DUP=KEY_DUP
+KEY_DRIGHT=KEY_DRIGHT
+KEY_DDOWN=KEY_DDOWN
 [network]
-enabled = 1
+enabled=1
 */
 
 int networking_enabled = 0;
