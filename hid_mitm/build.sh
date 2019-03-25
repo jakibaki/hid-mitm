@@ -11,11 +11,11 @@ echo "building for switch"
 pushd ..
 make -j
 popd
-mkdir -p out/atmosphere/titles/0100000000000123/flags
+mkdir -p out/atmosphere/titles/0100000000000faf/flags
 mkdir -p out/modules/hid_mitm
 cp config.ini out/modules/hid_mitm
-touch out/atmosphere/titles/0100000000000123/flags/boot2.flag
-cp hid_mitm.nsp out/atmosphere/titles/0100000000000123/exefs.nsp
+touch out/atmosphere/titles/0100000000000faf/flags/boot2.flag
+cp hid_mitm.nsp out/atmosphere/titles/0100000000000faf/exefs.nsp
 cp start.bat out/
 
 rm -r build.zip
