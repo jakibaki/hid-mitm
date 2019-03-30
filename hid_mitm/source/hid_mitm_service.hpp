@@ -39,12 +39,12 @@ class HidMitmService : public IMitmServiceObject
     {
         // We want to be loaded into as few as possible processess to save ram+cpu-time
 
-        if(IsApplicationTid(tid)) 
+        if(TitleIdIsApplication(tid)) 
         {
             return true;
         }
 
-        if(tid >= 0x0100000000001000ul && tid <= 0x0100000000001FFFul) 
+        if(TitleIdIsApplet(tid)) 
         {
             return tid != 0x010000000000100Cul;
         }

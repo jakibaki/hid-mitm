@@ -31,7 +31,7 @@ extern "C" {
 
     u32 __nx_applet_type = AppletType_None;
 
-    #define INNER_HEAP_SIZE 0x40000
+    #define INNER_HEAP_SIZE 0x60000
     size_t nx_inner_heap_size = INNER_HEAP_SIZE;
     char   nx_inner_heap[INNER_HEAP_SIZE];
     
@@ -65,7 +65,7 @@ static const SocketInitConfig sockInitConf = {
     // We're not using tcp anyways
 
     .udp_tx_buf_size = 0x2400,
-    .udp_rx_buf_size = 0x3400,
+    .udp_rx_buf_size = 0xA500,
 
     .sb_efficiency = 2,
 

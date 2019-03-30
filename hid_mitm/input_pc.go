@@ -99,7 +99,7 @@ func senderLoop(input chan inputPkg) {
 
 	pkg := inputPkg{magic: 0x3275}
 
-	tick := time.Tick(time.Second / 120)
+	tick := time.Tick(time.Second / 80)
 	for {
 		select {
 		case <-tick:
