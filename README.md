@@ -58,3 +58,9 @@ As a workaround to iOS not recognizing a plus and minus button `l1+l2+r1+r2+x` w
 * There are various problems that happen if hid-mitm and sys-ftpd are enabled at the same time.
 * Some phones have a terrible bluetooth connection which will result in input-delay if using bluetooth gamepads. I can't do anything about that, that's an issue with android.
 * On some wifi-networks iPhones have problems which will result in terrible input delay. You can work around this by just opening a hotspot on your phone and letting the switch connect to that. If you don't want your switch to use up mobile data be sure to enable 90dns.
+
+# Support
+
+The best way to get your questions answered is by asking in the [AtlasNX discord](https://discord.gg/qbRAuy7).
+
+Please don't pollute the issue-tracker with general usage questions.
