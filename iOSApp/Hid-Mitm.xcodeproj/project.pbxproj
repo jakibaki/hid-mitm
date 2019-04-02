@@ -1,0 +1,395 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		35635E3610999F126EE4AEBA /* libPods-Hid-Mitm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A2D2B8C302B31FBB414C01E /* libPods-Hid-Mitm.a */; };
+		F75DA928224B60330018BC0A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F75DA927224B60330018BC0A /* AppDelegate.swift */; };
+		F75DA92A224B60330018BC0A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F75DA929224B60330018BC0A /* ViewController.swift */; };
+		F75DA92D224B60340018BC0A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F75DA92B224B60340018BC0A /* Main.storyboard */; };
+		F75DA92F224B60390018BC0A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F75DA92E224B60390018BC0A /* Assets.xcassets */; };
+		F75DA932224B60390018BC0A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F75DA930224B60390018BC0A /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		20F60A5838EE0EA701842848 /* Pods-Hid-Mitm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hid-Mitm.release.xcconfig"; path = "Target Support Files/Pods-Hid-Mitm/Pods-Hid-Mitm.release.xcconfig"; sourceTree = "<group>"; };
+		8A2D2B8C302B31FBB414C01E /* libPods-Hid-Mitm.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Hid-Mitm.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B041CBF228D0F38F798EFA68 /* Pods-Hid-Mitm.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hid-Mitm.debug.xcconfig"; path = "Target Support Files/Pods-Hid-Mitm/Pods-Hid-Mitm.debug.xcconfig"; sourceTree = "<group>"; };
+		F75DA924224B60330018BC0A /* Hid-Mitm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hid-Mitm.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F75DA927224B60330018BC0A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F75DA929224B60330018BC0A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		F75DA92C224B60340018BC0A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		F75DA92E224B60390018BC0A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F75DA931224B60390018BC0A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F75DA933224B60390018BC0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F75DA921224B60330018BC0A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35635E3610999F126EE4AEBA /* libPods-Hid-Mitm.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3CDA95C236B98F7FBAAB401D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				B041CBF228D0F38F798EFA68 /* Pods-Hid-Mitm.debug.xcconfig */,
+				20F60A5838EE0EA701842848 /* Pods-Hid-Mitm.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		71A42D13A603969DC0FCC46B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8A2D2B8C302B31FBB414C01E /* libPods-Hid-Mitm.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F75DA91B224B60330018BC0A = {
+			isa = PBXGroup;
+			children = (
+				F75DA926224B60330018BC0A /* Hid-Mitm */,
+				F75DA925224B60330018BC0A /* Products */,
+				3CDA95C236B98F7FBAAB401D /* Pods */,
+				71A42D13A603969DC0FCC46B /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		F75DA925224B60330018BC0A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F75DA924224B60330018BC0A /* Hid-Mitm.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F75DA926224B60330018BC0A /* Hid-Mitm */ = {
+			isa = PBXGroup;
+			children = (
+				F75DA927224B60330018BC0A /* AppDelegate.swift */,
+				F75DA929224B60330018BC0A /* ViewController.swift */,
+				F75DA92B224B60340018BC0A /* Main.storyboard */,
+				F75DA92E224B60390018BC0A /* Assets.xcassets */,
+				F75DA930224B60390018BC0A /* LaunchScreen.storyboard */,
+				F75DA933224B60390018BC0A /* Info.plist */,
+			);
+			path = "Hid-Mitm";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F75DA923224B60330018BC0A /* Hid-Mitm */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F75DA936224B60390018BC0A /* Build configuration list for PBXNativeTarget "Hid-Mitm" */;
+			buildPhases = (
+				7320C0160FB96B57354E18A1 /* [CP] Check Pods Manifest.lock */,
+				F75DA920224B60330018BC0A /* Sources */,
+				F75DA921224B60330018BC0A /* Frameworks */,
+				F75DA922224B60330018BC0A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Hid-Mitm";
+			productName = "Hid-Mitm";
+			productReference = F75DA924224B60330018BC0A /* Hid-Mitm.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F75DA91C224B60330018BC0A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1020;
+				LastUpgradeCheck = 1020;
+				ORGANIZATIONNAME = "Jakob Dietrich";
+				TargetAttributes = {
+					F75DA923224B60330018BC0A = {
+						CreatedOnToolsVersion = 10.2;
+					};
+				};
+			};
+			buildConfigurationList = F75DA91F224B60330018BC0A /* Build configuration list for PBXProject "Hid-Mitm" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F75DA91B224B60330018BC0A;
+			productRefGroup = F75DA925224B60330018BC0A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F75DA923224B60330018BC0A /* Hid-Mitm */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F75DA922224B60330018BC0A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F75DA932224B60390018BC0A /* LaunchScreen.storyboard in Resources */,
+				F75DA92F224B60390018BC0A /* Assets.xcassets in Resources */,
+				F75DA92D224B60340018BC0A /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7320C0160FB96B57354E18A1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Hid-Mitm-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F75DA920224B60330018BC0A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F75DA92A224B60330018BC0A /* ViewController.swift in Sources */,
+				F75DA928224B60330018BC0A /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F75DA92B224B60340018BC0A /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F75DA92C224B60340018BC0A /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		F75DA930224B60390018BC0A /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F75DA931224B60390018BC0A /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F75DA934224B60390018BC0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F75DA935224B60390018BC0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F75DA937224B60390018BC0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B041CBF228D0F38F798EFA68 /* Pods-Hid-Mitm.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 623ZBLAZZZ;
+				INFOPLIST_FILE = "Hid-Mitm/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jakibaki.Hid-Mitm";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F75DA938224B60390018BC0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 20F60A5838EE0EA701842848 /* Pods-Hid-Mitm.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 623ZBLAZZZ;
+				INFOPLIST_FILE = "Hid-Mitm/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jakibaki.Hid-Mitm";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F75DA91F224B60330018BC0A /* Build configuration list for PBXProject "Hid-Mitm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F75DA934224B60390018BC0A /* Debug */,
+				F75DA935224B60390018BC0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F75DA936224B60390018BC0A /* Build configuration list for PBXNativeTarget "Hid-Mitm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F75DA937224B60390018BC0A /* Debug */,
+				F75DA938224B60390018BC0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F75DA91C224B60330018BC0A /* Project object */;
+}

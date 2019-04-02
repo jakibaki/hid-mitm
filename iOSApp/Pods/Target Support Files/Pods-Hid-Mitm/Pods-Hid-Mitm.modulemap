@@ -1,0 +1,6 @@
+module Pods_Hid_Mitm {
+  umbrella header "Pods-Hid-Mitm-umbrella.h"
+
+  export *
+  module * { export * }
+}

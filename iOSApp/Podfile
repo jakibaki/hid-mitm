@@ -1,0 +1,4 @@
+platform :ios, '9.1'
+target 'Hid-Mitm' do
+    pod 'SwiftSocket'
+end
