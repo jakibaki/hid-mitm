@@ -52,7 +52,7 @@ Download the `companion_apps.zip` from the [release page](https://github.com/jak
 
 As a workaround to iOS not recognizing a plus and minus button `l1+l2+r1+r2+x` will result in a `plus` and `l1+l2+r1+r2+dpad-left` in a `minus`.
 
-Hid mitm can also easily be repurposed to do scripted inputs (for example a "twitch plays").  
+Hid-mitm can also easily be repurposed to do scripted inputs (for example a "twitch plays").  
 Check out the `input_pc.py` for some reference of how to talk to hid-mitm.
 
 # Known issues
