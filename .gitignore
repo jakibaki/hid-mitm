@@ -1,10 +1,11 @@
+hid_mitm/out/*
+hid_mitm/tools/*
 hid_mitm/build/*
 hid_mitm/hid_mitm.elf
 hid_mitm/hid_mitm.npdm
 hid_mitm/hid_mitm.nso
 hid_mitm/hid_mitm.nsp
-hid_mitm/out
 hid_mitm/input_pc_*
-hid_mitm/build.zip
+hid_mitm/*.zip
 */.vscode/*
 .vscode/*
