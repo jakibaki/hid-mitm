@@ -63,6 +63,7 @@ Check out the `input_pc.py` for some reference of how to talk to hid-mitm.
 * On some wifi-networks iPhones have problems which will result in terrible input delay. You can work around this by just opening a hotspot on your phone and letting the switch connect to that. If you don't want your switch to use up mobile data be sure to enable 90dns.
 * Some gamepads won't have their inputs mapped correctly on android.  
 If anyone who has experience with android development wants to get that fixed by adding some kind of "setup interface" it would be greatly appreciated.
+* Tetris 99 doesn't want to recognize custom gamepads for some reason
 
 # Planned features
 
