@@ -64,6 +64,13 @@ Check out the `input_pc.py` for some reference of how to talk to hid-mitm.
 * Some gamepads won't have their inputs mapped correctly on android.  
 If anyone who has experience with android development wants to get that fixed by adding some kind of "setup interface" it would be greatly appreciated.
 
+# Planned features
+
+* Support for connecting multiple custom gamepads
+* Support for motion controls
+* (maybe) vibration support
+* Support for "disguising" gamepads as something else. To allow for example to play pokemon with a pro-controller.
+
 # Support
 
 The best way to get your questions answered is by asking in the [AtlasNX discord](https://discord.gg/qbRAuy7).
