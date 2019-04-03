@@ -64,6 +64,7 @@ Check out the `input_pc.py` for some reference of how to talk to hid-mitm.
 * Some gamepads won't have their inputs mapped correctly on android.  
 If anyone who has experience with android development wants to get that fixed by adding some kind of "setup interface" it would be greatly appreciated.
 * Tetris 99 doesn't want to recognize custom gamepads for some reason
+* The switch doesn't seem to accept using the custom gamepad as "activity" so the screen will automatically fade out after a while. You can work around that by turning off the auto-screen-off feature in the system settings.
 
 # Planned features
 
