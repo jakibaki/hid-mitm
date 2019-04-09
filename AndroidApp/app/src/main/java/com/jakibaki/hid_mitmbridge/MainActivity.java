@@ -62,9 +62,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    int i = 0;
-
     boolean dpad_is_axis = true;
 
     @Override
@@ -192,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
     class SenderThread extends Thread {
         public void run() {
 
-
             while(true) {
                 byte[] msg;
                 msg = build_pkg();
@@ -244,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        ipBox = (EditText) findViewById(R.id.ip_adress_box);
+        ipBox = findViewById(R.id.ip_adress_box);
         final SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
         String last_ip = prefs.getString("last_ip", "192.168.178.22");
         ipBox.setText(last_ip);
@@ -268,8 +264,7 @@ public class MainActivity extends AppCompatActivity {
         wakeLock = powerManager.newWakeLock(field, getLocalClassName());
         wakeLock.acquire();
 
-
-        connectButton = (Button) findViewById(R.id.set_ip_button);
+        connectButton = findViewById(R.id.set_ip_button);
         connectButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
@@ -285,10 +280,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), " is not a valid ip!", Toast.LENGTH_SHORT).show();
                 }
 
-
             }
         });
     }
 }
-
-
