@@ -1,5 +1,6 @@
 package com.jakibaki.hid_mitmbridge;
 
+import android.content.SharedPreferences;
 import android.os.PowerManager;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
@@ -248,8 +249,13 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        ipBox = (EditText) findViewById(R.id.ip_adress_box);
+        final SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
+        String last_ip = prefs.getString("last_ip", "192.168.178.22");
+        ipBox.setText(last_ip);
+
         try {
-            address = InetAddress.getByName("192.168.178.22");
+            address = InetAddress.getByName(last_ip);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -267,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
         wakeLock = powerManager.newWakeLock(field, getLocalClassName());
         wakeLock.acquire();
 
-        ipBox = (EditText) findViewById(R.id.ip_adress_box);
 
         connectButton = (Button) findViewById(R.id.set_ip_button);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -280,10 +285,13 @@ public class MainActivity extends AppCompatActivity {
                             "Sending input to " + ipBox.getText() + " now",
                             Toast.LENGTH_SHORT);
                     toast.show();
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("last_ip", ipBox.getText().toString());
+                    editor.commit();
 
                 } catch (UnknownHostException e) {
                     Toast toast = Toast.makeText(getApplicationContext(),
-                            ipBox.getText() + " is not a vaild ip!",
+                            ipBox.getText() + " is not a valid ip!",
                             Toast.LENGTH_SHORT);
                     toast.show();
 
