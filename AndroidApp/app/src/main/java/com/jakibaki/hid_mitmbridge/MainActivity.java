@@ -5,7 +5,6 @@ import android.os.PowerManager;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,10 +20,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static java.lang.Math.abs;
 
@@ -281,20 +276,13 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     address = InetAddress.getByName(String.valueOf(ipBox.getText()));
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            "Sending input to " + ipBox.getText() + " now",
-                            Toast.LENGTH_SHORT);
-                    toast.show();
+                    Toast.makeText(getApplicationContext(), "Sending input to " + ipBox.getText() + " now", Toast.LENGTH_SHORT).show();
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("last_ip", ipBox.getText().toString());
                     editor.commit();
 
                 } catch (UnknownHostException e) {
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            ipBox.getText() + " is not a valid ip!",
-                            Toast.LENGTH_SHORT);
-                    toast.show();
-
+                    Toast.makeText(getApplicationContext(), " is not a valid ip!", Toast.LENGTH_SHORT).show();
                 }
 
 
