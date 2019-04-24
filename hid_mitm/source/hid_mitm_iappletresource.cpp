@@ -111,7 +111,7 @@ void loadConfig()
 {
     mutexLock(&configMutex);
     rebind_config.clear();
-    if (ini_parse("/modules/hid_mitm/config.ini", handler, NULL) < 0)
+    if (ini_parse("/config/hid_mitm/config.ini", handler, NULL) < 0)
     {
         //fatalSimple(MAKERESULT(321, 1)); // 2321-0001 bad config
     }

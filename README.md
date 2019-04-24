@@ -29,7 +29,7 @@ Simply open the Kosmos toolbox, go to the sysmodule menu and continue to the hid
 After that a screen will pop up in which you can select the button you want to rebind and then what you want it to rebind for.  
 After you're done, be sure to touch the button in the middle to save your changes.
 
-You can also configure it manually by editing the `/modules/hid_mitm/config.ini` file.
+You can also configure it manually by editing the `/config/hid_mitm/config.ini` file.
 
 ## Custom gamepads
 The way that custom gamepads work with hid-mitm is not by directly connecting the gamepad to your switch but by connecting your gamepad to your phone (and experimentally pc) and then running the hid-mitm app which then in turn sends the input to your switch which will recognize it as an additional pro-controller.
