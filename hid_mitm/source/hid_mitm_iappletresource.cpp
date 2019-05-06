@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <math.h>
 #include "ini.h"
 #include "hid_custom.h"
 #include "udp_input.h"
@@ -165,24 +166,24 @@ void rebind_keys(int gamepad_ind)
             // lstick rstick stuff
             for (int i = 0; i < JOYSTICK_NUM_STICKS; i++)
             {
-                if (abs(curTmpEnt->joysticks[i].dy) <= stick_deadzone)
-                {
-                    curTmpEnt->joysticks[i].dy = 0;
-                    buttons &= ~(BIT(17 + i * 4) | BIT(19 + i * 4)); // Stick up and down
-                }
-                else
-                {
-                    buttons |= curTmpEnt->buttons & (BIT(17 + i * 4) | BIT(19 + i * 4));
-                }
-
-                if (abs(curTmpEnt->joysticks[i].dx) <= stick_deadzone)
+                if (pow(curTmpEnt->joysticks[i].dx, 2) + pow(curTmpEnt->joysticks[i].dy, 2) <= pow(stick_deadzone, 2))
                 {
                     curTmpEnt->joysticks[i].dx = 0;
-                    buttons &= ~(BIT(16 + i * 4) | BIT(18 + i * 4)); // Stick left and right
+                    curTmpEnt->joysticks[i].dy = 0;
+
+                    // Stick digital stuff
+                    for (int j = 16; j <= 19; j++)
+                    {
+                        buttons &= ~BIT(j + i * 4); // Unset each bit
+                    }
                 }
                 else
                 {
-                    buttons |= curTmpEnt->buttons & (BIT(16 + i * 4) | BIT(18 + i * 4));
+                    // Stick digital stuff
+                    for (int j = 16; j <= 19; j++)
+                    {
+                        buttons |= curTmpEnt->buttons & BIT(j + i * 4); // Set each bit if it was originally set
+                    }
                 }
             }
 
