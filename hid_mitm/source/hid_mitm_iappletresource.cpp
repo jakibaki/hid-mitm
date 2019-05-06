@@ -97,7 +97,8 @@ static int handler(void *dummy, const char *section, const char *name,
     if (!strcmp(name, "enabled"))
     {
         networking_enabled = atoi(value);
-    } else if (!strcmp(name, "deadzone"))
+    }
+    else if (!strcmp(name, "deadzone"))
     {
         stick_deadzone = atoi(value);
     }
@@ -161,21 +162,36 @@ void rebind_keys(int gamepad_ind)
                 }
             }
 
-            // lstick rstick digital stuff
-            for (int i = 16; i <= 27; i++)
+            // lstick rstick stuff
+            for (int i = 0; i < JOYSTICK_NUM_STICKS; i++)
+            {
+                if (abs(curTmpEnt->joysticks[i].dy) <= stick_deadzone)
+                {
+                    curTmpEnt->joysticks[i].dy = 0;
+                    buttons &= ~(BIT(17 + i * 4) | BIT(19 + i * 4)); // Stick up and down
+                }
+                else
+                {
+                    buttons |= curTmpEnt->buttons & (BIT(17 + i * 4) | BIT(19 + i * 4));
+                }
+
+                if (abs(curTmpEnt->joysticks[i].dx) <= stick_deadzone)
+                {
+                    curTmpEnt->joysticks[i].dx = 0;
+                    buttons &= ~(BIT(16 + i * 4) | BIT(18 + i * 4)); // Stick left and right
+                }
+                else
+                {
+                    buttons |= curTmpEnt->buttons & (BIT(16 + i * 4) | BIT(18 + i * 4));
+                }
+            }
+
+            // sl sr stuff
+            for (int i = 24; i <= 27; i++)
             {
                 buttons |= curTmpEnt->buttons & BIT(i);
             }
             curTmpEnt->buttons = buttons;
-
-            for (int i = 0; i < JOYSTICK_NUM_STICKS; i++)
-            {
-                if (abs(curTmpEnt->joysticks[i].dy) <= stick_deadzone)
-                    curTmpEnt->joysticks[i].dy = 0;
-
-                if (abs(curTmpEnt->joysticks[i].dx) <= stick_deadzone)
-                    curTmpEnt->joysticks[i].dx = 0;
-            }
         }
     }
     mutexUnlock(&configMutex);
