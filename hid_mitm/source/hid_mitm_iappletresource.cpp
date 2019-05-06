@@ -66,6 +66,7 @@ s64 get_key_ind(std::string str)
 ; Gamepad-rebind config. Currently always rebinds for all players, no individual config.
 ; VALUE is the button that gets registered when KEY is held down
 [player1]
+deadzone=0
 KEY_A=KEY_A
 KEY_B=KEY_B
 KEY_X=KEY_X
@@ -88,12 +89,17 @@ enabled=1
 
 int networking_enabled = 0;
 
+s16 stick_deadzone = 0;
+
 static int handler(void *dummy, const char *section, const char *name,
                    const char *value)
 {
     if (!strcmp(name, "enabled"))
     {
         networking_enabled = atoi(value);
+    } else if (!strcmp(name, "deadzone"))
+    {
+        stick_deadzone = atoi(value);
     }
 
     s64 key = get_key_ind(name);
@@ -161,6 +167,15 @@ void rebind_keys(int gamepad_ind)
                 buttons |= curTmpEnt->buttons & BIT(i);
             }
             curTmpEnt->buttons = buttons;
+
+            for (int i = 0; i < JOYSTICK_NUM_STICKS; i++)
+            {
+                if (abs(curTmpEnt->joysticks[i].dy) <= stick_deadzone)
+                    curTmpEnt->joysticks[i].dy = 0;
+
+                if (abs(curTmpEnt->joysticks[i].dx) <= stick_deadzone)
+                    curTmpEnt->joysticks[i].dx = 0;
+            }
         }
     }
     mutexUnlock(&configMutex);
