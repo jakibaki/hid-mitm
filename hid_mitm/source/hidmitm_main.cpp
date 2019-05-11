@@ -91,6 +91,8 @@ void __appInit(void) {
     rc = timeInitialize();
     if (R_FAILED(rc))
         fatalSimple(rc);
+    __libnx_init_time();
+
     //rc = hidInitialize();
     //if (R_FAILED(rc))
     //    fatalSimple(rc);
