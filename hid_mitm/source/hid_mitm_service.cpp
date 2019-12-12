@@ -15,16 +15,13 @@
  */
 
 #include <mutex>
+#include <optional>
 #include <switch.h>
 #include "hid_mitm_service.hpp"
 #include "hid_mitm_iappletresource.hpp"
 #include "hid_custom.h"
 
-void HidMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx) {
-    /* No commands need postprocessing. */    
-}
-
-Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out,PidDescriptor pid, u64 aruid)
+ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 aruid)
 {
     Service out_iappletresource;
     SharedMemory real_shmem, fake_shmem;
@@ -38,25 +35,23 @@ Result HidMitmService::CreateAppletResource(Out<std::shared_ptr<IAppletResourceM
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
 
-    intf->pid = pid.pid;
+    intf->pid = pid;
     intf->fake_sharedmem = fake_shmem;
     intf->real_sharedmem = real_shmem;
     intf->iappletresource_handle = out_iappletresource;
-    add_shmem(intf->pid, &intf->real_sharedmem, &intf->fake_sharedmem);
+    add_shmem(intf->pid.value, &intf->real_sharedmem, &intf->fake_sharedmem);
 
     out.SetValue(std::move(intf));
-    if (out.IsDomain()) {
-        fatalSimple(0x111); // Doesn't seem to ever happen thankfully
-    }
     return 0;
 }
 
-Result HidMitmService::ReloadConfig() {
+ams::Result HidMitmService::ReloadConfig() {
     loadConfig();
     return 0;
 }
 
-Result HidMitmService::ClearConfig() {
+ams::Result HidMitmService::ClearConfig() {
     clearConfig();
     return 0;
 }
+

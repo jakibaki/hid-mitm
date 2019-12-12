@@ -81,18 +81,18 @@ void customHidSetup(Service* hid_service, Service* out_iappletresource, SharedMe
     Result rc;
     rc = _customHidCreateAppletResource(hid_service, out_iappletresource); // Executes the original ipc
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
 
     Handle sharedMemHandle;
 
     rc = _customHidGetSharedMemoryHandle(out_iappletresource, &sharedMemHandle);
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
 
     shmemLoadRemote(out_real_shmem, sharedMemHandle, 0x40000, Perm_R);
     rc = shmemMap(out_real_shmem);
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
 
     shmemCreate(out_fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
     shmemMap(out_fake_shmem);

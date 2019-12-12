@@ -2,7 +2,6 @@
 #include <switch.h>
 #include <stratosphere.hpp>
 
-
 void loadConfig();
 void clearConfig();
 void copyThreadInitialize();
@@ -14,7 +13,7 @@ enum IAppletResourceCmd : u32 {
 };
 
 
-class IAppletResourceMitmService : public IServiceObject {      
+class IAppletResourceMitmService : public ams::sf::IServiceObject {
     public:
         IAppletResourceMitmService(IAppletResourceMitmService* dummy)  {
             /* ... */
@@ -22,19 +21,17 @@ class IAppletResourceMitmService : public IServiceObject {
         
         ~IAppletResourceMitmService();
 
-
-        static void PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx);
-        
     protected:
         /* Overridden commands. */
-        virtual Result GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand) final;
+        virtual ams::Result GetSharedMemoryHandle(ams::sf::OutCopyHandle shmem_hand) final;
     public:
         DEFINE_SERVICE_DISPATCH_TABLE {
-            MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
+            ams::sf::MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
         };
 
-    u64 pid;
+    ams::os::ProcessId pid;
     Service iappletresource_handle;
     SharedMemory real_sharedmem;
     SharedMemory fake_sharedmem;
 };
+

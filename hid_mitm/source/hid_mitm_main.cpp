@@ -18,6 +18,8 @@
 #include <cstdint>
 #include <cstring>
 #include <malloc.h>
+#include <optional>
+#include <mutex>
 
 #include <switch.h>
 #include <stratosphere.hpp>
@@ -70,10 +72,8 @@ static const SocketInitConfig sockInitConf = {
 
     .sb_efficiency = 2,
 
-    .serialized_out_addrinfos_max_size  = 0x1000,
-    .serialized_out_hostent_max_size    = 0x200,
-    .bypass_nsd                         = false,
-    .dns_timeout                        = 0,
+    .num_bsd_sessions = 3,
+    .bsd_service_type = BsdServiceType_User
 };
 
 
@@ -82,26 +82,26 @@ void __appInit(void) {
 
     rc = smInitialize();
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
     rc = fsInitialize();
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
     rc = fsdevMountSdmc();
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
     rc = timeInitialize();
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
     __libnx_init_time();
 
     //rc = hidInitialize();
     //if (R_FAILED(rc))
-    //    fatalSimple(rc);
+    //    fatalThrow(rc);
     
     
     rc = socketInitialize(&sockInitConf);
     if (R_FAILED(rc))
-        fatalSimple(rc);
+        fatalThrow(rc);
     
 }
 
@@ -119,7 +119,15 @@ struct HidManagerOptions {
     static const size_t MaxDomainObjects = 0x100;
 };
 
-using HidMitmManager = WaitableManager<HidManagerOptions>;
+
+constexpr size_t MaxServers = 1;
+using HidMitmManager = ams::sf::hipc::ServerManager<MaxServers, HidManagerOptions>;
+
+constexpr ams::sm::ServiceName MitmServiceName = ams::sm::ServiceName::Encode("hid");
+
+namespace ams::result {
+    bool CallFatalOnResultAssertion = false;
+}
 
 int main(int argc, char **argv)
 {
@@ -127,16 +135,10 @@ int main(int argc, char **argv)
     customHidInitialize();
     copyThreadInitialize();
 
-    /* TODO: What's a good timeout value to use here? */
-    auto server_manager = new HidMitmManager(1);
+    HidMitmManager server_manager;
+    R_ASSERT(server_manager.RegisterMitmServer<HidMitmService>(MitmServiceName));
+    server_manager.LoopProcess();
     
-    /* Create hid mitm. */
-    AddMitmServerToManager<HidMitmService>(server_manager, "hid", 4);
-    
-    /* Loop forever, servicing our services. */
-    server_manager->Process();
-    
-    delete server_manager;
     return 0;
 }
 

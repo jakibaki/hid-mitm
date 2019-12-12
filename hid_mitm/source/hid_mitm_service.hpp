@@ -17,8 +17,12 @@
 #pragma once
 #include <switch.h>
 #include <stratosphere.hpp>
-#include <stratosphere/utilities.hpp>
+#include <stratosphere/util.hpp>
+#include <stratosphere/ams.hpp>
+#include <stratosphere/os.hpp>
 #include "hid_mitm_iappletresource.hpp"
+
+#include <memory>
 
 enum HidCmd : u32
 {
@@ -27,43 +31,41 @@ enum HidCmd : u32
     HidCmd_ClearHidMitmConfig = 65001,
 };
 
-class HidMitmService : public IMitmServiceObject
+class HidMitmService : public ams::sf::IMitmServiceObject
 {
   public:
-    HidMitmService(std::shared_ptr<Service> s, u64 pid) : IMitmServiceObject(s, pid)
+    HidMitmService(std::shared_ptr<Service> &&s, const ams::sm::MitmProcessInfo &c) : IMitmServiceObject(std::move(s), c)
     {
         /* ... */
     }
 
-    static bool ShouldMitm(u64 pid, u64 tid)
+    static bool ShouldMitm(const ams::sm::MitmProcessInfo &client_info)
     {
         // We want to be loaded into as few as possible processess to save ram+cpu-time
 
-        if(TitleIdIsApplication(tid)) 
+        if(ams::ncm::IsApplicationProgramId(client_info.program_id))
         {
             return true;
         }
 
-        if(TitleIdIsApplet(tid)) 
+        if(ams::ncm::IsAppletProgramId(client_info.program_id))
         {
-            return tid != 0x010000000000100Cul;
+            return client_info.program_id.value != 0x010000000000100Cul;
         }
 
         return false;
     }
 
-    static void PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx);
-
   protected:
     /* Overridden commands. */
-    virtual Result CreateAppletResource(Out<std::shared_ptr<IAppletResourceMitmService>> out, PidDescriptor pid, u64 arid) final;
-    virtual Result ReloadConfig() final;
-    virtual Result ClearConfig() final;
+    virtual ams::Result CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 arid) final;
+    virtual ams::Result ReloadConfig() final;
+    virtual ams::Result ClearConfig() final;
 
   public:
     DEFINE_SERVICE_DISPATCH_TABLE{
-        MakeServiceCommandMeta<HidCmd_CreateAppletResource, &HidMitmService::CreateAppletResource>(),
-        MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &HidMitmService::ReloadConfig>(),
-        MakeServiceCommandMeta<HidCmd_ClearHidMitmConfig, &HidMitmService::ClearConfig>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_CreateAppletResource, &HidMitmService::CreateAppletResource>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &HidMitmService::ReloadConfig>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_ClearHidMitmConfig, &HidMitmService::ClearConfig>(),
     };
 };

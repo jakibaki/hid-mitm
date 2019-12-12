@@ -1,5 +1,6 @@
 #include <mutex>
 #include <map>
+#include <unordered_map>
 #include <switch.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -136,7 +137,7 @@ void clearConfig()
 
 void rebind_keys(int gamepad_ind)
 {
-    if (tmp_shmem_mem.controllers[gamepad_ind].unk_1[0] == 0)
+    if (tmp_shmem_mem.controllers[gamepad_ind].misc.deviceType == 0)
     {
         return;
     }
@@ -212,15 +213,15 @@ int apply_fake_gamepad(struct input_msg msg)
     int gamepad;
     for (gamepad = CONTROLLER_PLAYER_1; gamepad <= CONTROLLER_PLAYER_8; gamepad++)
     {
-        if (tmp_shmem_mem.controllers[gamepad].unk_1[0] == 0)
+        if (tmp_shmem_mem.controllers[gamepad].misc.deviceType == 0)
             break;
     }
 
-    memset(tmp_shmem_mem.controllers[gamepad].unk_1, 0, 0x40);
+    memset(&tmp_shmem_mem.controllers[gamepad].misc, 0, 0x40); // can probably be sizeof(misc)
     memset(&tmp_shmem_mem.controllers[gamepad].header, 0, sizeof(HidControllerHeader));
 
     // Pro controller magic
-    tmp_shmem_mem.controllers[gamepad].unk_1[0] = 0x01;
+    tmp_shmem_mem.controllers[gamepad].misc.deviceType = 0x01;
 
     tmp_shmem_mem.controllers[gamepad].header.singleColorBody = 0;
     tmp_shmem_mem.controllers[gamepad].header.singleColorButtons = 0xFFFFFFFF;
@@ -258,7 +259,7 @@ void shmem_copy(HidSharedMemory *source, HidSharedMemory *dest)
     for (int i = 0; i < 10; i++)
     {
         // Only copy used gamepads
-        if (dest->controllers[i].unk_1[0] != 0 || source->controllers[i].unk_1[0] != 0)
+        if (dest->controllers[i].misc.deviceType != 0 || source->controllers[i].misc.deviceType != 0)
             memcpy(&dest->controllers[i], &source->controllers[i], sizeof(source->controllers[i]) - sizeof(source->controllers[i].unk_2)); // unk_2 is apparently unused and is huge
     }
 }
@@ -296,7 +297,7 @@ void net_thread(void* _)
 
 void copy_thread(void* _)
 {
-    Result rc;
+    ams::Result rc;
 
     /*rc = viInitialize(ViServiceType_System);
     if (R_FAILED(rc))
@@ -364,27 +365,23 @@ void copyThreadInitialize()
     mutexInit(&configMutex);
     mutexInit(&pkgMutex);
     loadConfig();
-    threadCreate(&shmem_patch_thread, copy_thread, NULL, 0x1000, 0x21, 3);
+    threadCreate(&shmem_patch_thread, copy_thread, NULL, NULL, 0x1000, 0x21, 3);
     threadStart(&shmem_patch_thread);
 
-    threadCreate(&network_thread, net_thread, NULL, 0x1000, 0x30, 3);
+    threadCreate(&network_thread, net_thread, NULL, NULL, 0x1000, 0x30, 3);
     threadStart(&network_thread);
 }
 
 IAppletResourceMitmService::~IAppletResourceMitmService()
 {
-    del_shmem(this->pid);
+    del_shmem(this->pid.value);
     customHidExit(&this->iappletresource_handle, &this->real_sharedmem, &this->fake_sharedmem);
 }
 
-Result IAppletResourceMitmService::GetSharedMemoryHandle(Out<CopiedHandle> shmem_hand)
+ams::Result IAppletResourceMitmService::GetSharedMemoryHandle(ams::sf::OutCopyHandle shmem_hand)
 {
     shmem_hand.SetValue(this->fake_sharedmem.handle);
 
     return 0;
 }
 
-void IAppletResourceMitmService::PostProcess(IMitmServiceObject *obj, IpcResponseContext *ctx)
-{
-    /* No commands need postprocessing. */
-}
