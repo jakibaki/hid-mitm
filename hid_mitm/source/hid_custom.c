@@ -20,7 +20,8 @@ static Result _customHidGetSharedMemoryHandle(Service *srv, Handle *handle_out) 
                            .out_handles = handle_out, );
 }
 
-void customHidSetup(Service *hid_service, Service *out_iappletresource, SharedMemory *out_real_shmem, SharedMemory *out_fake_shmem) {
+void customHidSetup(Service* hid_service, Service* out_iappletresource, SharedMemory* out_real_shmem, SharedMemory* out_fake_shmem)
+{
     Result rc;
     rc = _customHidCreateAppletResource(hid_service, out_iappletresource); // Executes the original ipc
     if (R_FAILED(rc))
@@ -39,9 +40,11 @@ void customHidSetup(Service *hid_service, Service *out_iappletresource, SharedMe
 
     shmemCreate(out_fake_shmem, sizeof(HidSharedMemory), Perm_Rw, Perm_R);
     shmemMap(out_fake_shmem);
+
 }
 
-void customHidExit(Service *iappletresource, SharedMemory *real_shmem, SharedMemory *fake_shmem) {
+void customHidExit(Service* iappletresource, SharedMemory* real_shmem, SharedMemory* fake_shmem) 
+{
     mutexLock(&shmem_mutex);
     shmemUnmap(real_shmem);
     shmemClose(real_shmem);
@@ -53,6 +56,7 @@ void customHidExit(Service *iappletresource, SharedMemory *real_shmem, SharedMem
     serviceClose(iappletresource);
 }
 
-void customHidInitialize() {
+void customHidInitialize()
+{
     mutexInit(&shmem_mutex);
 }

@@ -22,13 +22,17 @@
 #include <mutex>
 #include <optional>
 
-ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::sf::ClientAppletResourceUserId arid) {
+ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 aruid)
+{
     Service out_iappletresource;
     SharedMemory real_shmem, fake_shmem;
     // This needs to be the first ipc being done since it relies on stuff that libstrato left for us. TODO: Do this properly
     customHidSetup(this->forward_service.get(), &out_iappletresource, &real_shmem, &fake_shmem);
 
+
     std::shared_ptr<IAppletResourceMitmService> intf = nullptr;
+
+
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
 
@@ -51,3 +55,4 @@ ams::Result HidMitmService::ClearConfig() {
     clearConfig();
     return 0;
 }
+

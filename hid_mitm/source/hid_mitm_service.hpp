@@ -32,25 +32,30 @@ public:
         /* ... */
     }
 
-    static bool ShouldMitm(const ams::sm::MitmProcessInfo &client_info) {
+    static bool ShouldMitm(const ams::sm::MitmProcessInfo &client_info)
+    {
         // We want to be loaded into as few as possible processess to save ram+cpu-time
 
-        if (ams::ncm::IsApplicationProgramId(client_info.program_id)) {
+        if(ams::ncm::IsApplicationProgramId(client_info.program_id))
+        {
             return true;
         }
 
-        if (ams::ncm::IsAppletProgramId(client_info.program_id)) {
+        if(ams::ncm::IsAppletProgramId(client_info.program_id))
+        {
             return client_info.program_id.value != 0x010000000000100Cul;
         }
 
         return false;
     }
-protected:
+
+  protected:
     /* Overridden commands. */
     virtual ams::Result CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::sf::ClientAppletResourceUserId arid) final;
     virtual ams::Result ReloadConfig() final;
     virtual ams::Result ClearConfig() final;
-public:
+
+  public:
     DEFINE_SERVICE_DISPATCH_TABLE{
         MAKE_SERVICE_COMMAND_META(CreateAppletResource),
         MAKE_SERVICE_COMMAND_META(ReloadConfig),

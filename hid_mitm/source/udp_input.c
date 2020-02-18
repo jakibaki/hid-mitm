@@ -18,13 +18,16 @@ static int sockfd = -1;
 
 struct sockaddr_in servaddr, cliaddr;
 
-void setup_socket() {
-    if (sockfd != -1) {
+void setup_socket()
+{
+    if (sockfd != -1)
+    {
         close(sockfd);
     }
-
+    
     // Creating socket file descriptor
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
@@ -51,8 +54,10 @@ static int failed = 11;
 static int counter = 0;
 static struct input_msg cached_msg = {0};
 u64 last_time;
-int poll_udp_input(struct input_msg *buf) {
-    if (++counter != 3) {
+int poll_udp_input(struct input_msg *buf)
+{
+    if (++counter != 3)
+    {
         if (failed > 10)
             return -1;
         *buf = cached_msg;
@@ -62,7 +67,8 @@ int poll_udp_input(struct input_msg *buf) {
 
     // Wakeup detection
     u64 tmp_time = svcGetSystemTick();
-    if (tmp_time - last_time > (19200000 / 10)) {
+    if (tmp_time - last_time > (19200000 / 10))
+    {
         svcSleepThread(5e+8L);
         setup_socket();
         curIP = gethostid();
@@ -72,12 +78,14 @@ int poll_udp_input(struct input_msg *buf) {
 
     // Reduce the poll frequency to lower load.
     // If we're not "connected" right now we only check around every second
-    if (failed > 10 && failed % 10 != 0) {
+    if (failed > 10 && failed % 10 != 0)
+    {
         failed++;
         return -1;
     }
 
-    if (curIP != gethostid()) {
+    if (curIP != gethostid())
+    {
         setup_socket();
         curIP = gethostid();
     }
@@ -88,15 +96,19 @@ int poll_udp_input(struct input_msg *buf) {
     n = recvfrom(sockfd, &tmp_msg, sizeof(struct input_msg),
                  MSG_WAITALL, (struct sockaddr *)&cliaddr,
                  &len);
-    if (n <= 0 || tmp_msg.magic != INPUT_MSG_MAGIC) {
+    if (n <= 0 || tmp_msg.magic != INPUT_MSG_MAGIC)
+    {
         failed++;
-    } else {
+    }
+    else
+    {
         failed = 0;
         cached_msg = tmp_msg;
     }
     *buf = cached_msg;
 
-    if (failed >= 10) {
+    if (failed >= 10)
+    {
         return -1;
     }
 
