@@ -22,7 +22,7 @@
 #include <mutex>
 #include <optional>
 
-ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 aruid)
+ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::sf::ClientAppletResourceUserId arid)
 {
     Service out_iappletresource;
     SharedMemory real_shmem, fake_shmem;
