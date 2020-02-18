@@ -26,7 +26,8 @@ class IAppletResourceMitmService : public ams::sf::IServiceObject {
         virtual ams::Result GetSharedMemoryHandle(ams::sf::OutCopyHandle shmem_hand) final;
     public:
         DEFINE_SERVICE_DISPATCH_TABLE {
-            ams::sf::MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &IAppletResourceMitmService::GetSharedMemoryHandle>()
+            ams::sf::MakeServiceCommandMeta<IAppletResource_GetSharedMemoryHandle, &ServiceImpl::GetSharedMemoryHandle>()
+			// TODO: use MAKE_SERVICE_COMMAND_META(GetSharedMemoryHandle)
         };
 
     ams::os::ProcessId pid;

@@ -64,8 +64,9 @@ class HidMitmService : public ams::sf::IMitmServiceObject
 
   public:
     DEFINE_SERVICE_DISPATCH_TABLE{
-        ams::sf::MakeServiceCommandMeta<HidCmd_CreateAppletResource, &HidMitmService::CreateAppletResource>(),
-        ams::sf::MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &HidMitmService::ReloadConfig>(),
-        ams::sf::MakeServiceCommandMeta<HidCmd_ClearHidMitmConfig, &HidMitmService::ClearConfig>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_CreateAppletResource, &ServiceImpl::CreateAppletResource>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &ServiceImpl::ReloadConfig>(),
+        ams::sf::MakeServiceCommandMeta<HidCmd_ClearHidMitmConfig, &ServiceImpl::ClearConfig>(),
+		// TODO: use e.g. MAKE_SERVICE_COMMAND_META(CreateAppletResource),
     };
 };
