@@ -15,58 +15,45 @@
 */
 
 #pragma once
-#include <switch.h>
-#include <stratosphere.hpp>
-#include <stratosphere/util.hpp>
-#include <stratosphere/ams.hpp>
-#include <stratosphere/os.hpp>
 #include "hid_mitm_iappletresource.hpp"
 
 #include <memory>
+#include <stratosphere.hpp>
 
-enum HidCmd : u32
-{
-    HidCmd_CreateAppletResource = 0,
-    HidCmd_ReloadHidMitmConfig = 65000,
-    HidCmd_ClearHidMitmConfig = 65001,
-};
-
-class HidMitmService : public ams::sf::IMitmServiceObject
-{
-  public:
-    HidMitmService(std::shared_ptr<Service> &&s, const ams::sm::MitmProcessInfo &c) : IMitmServiceObject(std::move(s), c)
-    {
+class HidMitmService : public ams::sf::IMitmServiceObject {
+private:
+    enum class CommandId {
+        CreateAppletResource = 0,
+        ReloadConfig = 65000,
+        ClearConfig = 65001,
+    };
+public:
+    HidMitmService(std::shared_ptr<Service> &&s, const ams::sm::MitmProcessInfo &c) : IMitmServiceObject(std::move(s), c) {
         /* ... */
     }
 
-    static bool ShouldMitm(const ams::sm::MitmProcessInfo &client_info)
-    {
+    static bool ShouldMitm(const ams::sm::MitmProcessInfo &client_info) {
         // We want to be loaded into as few as possible processess to save ram+cpu-time
 
-        if(ams::ncm::IsApplicationProgramId(client_info.program_id))
-        {
+        if (ams::ncm::IsApplicationProgramId(client_info.program_id)) {
             return true;
         }
 
-        if(ams::ncm::IsAppletProgramId(client_info.program_id))
-        {
+        if (ams::ncm::IsAppletProgramId(client_info.program_id)) {
             return client_info.program_id.value != 0x010000000000100Cul;
         }
 
         return false;
     }
-
-  protected:
+protected:
     /* Overridden commands. */
-    virtual ams::Result CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 arid) final;
+    virtual ams::Result CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::sf::ClientAppletResourceUserId arid) final;
     virtual ams::Result ReloadConfig() final;
     virtual ams::Result ClearConfig() final;
-
-  public:
+public:
     DEFINE_SERVICE_DISPATCH_TABLE{
-        ams::sf::MakeServiceCommandMeta<HidCmd_CreateAppletResource, &ServiceImpl::CreateAppletResource>(),
-        ams::sf::MakeServiceCommandMeta<HidCmd_ReloadHidMitmConfig, &ServiceImpl::ReloadConfig>(),
-        ams::sf::MakeServiceCommandMeta<HidCmd_ClearHidMitmConfig, &ServiceImpl::ClearConfig>(),
-		// TODO: use e.g. MAKE_SERVICE_COMMAND_META(CreateAppletResource),
+        MAKE_SERVICE_COMMAND_META(CreateAppletResource),
+        MAKE_SERVICE_COMMAND_META(ReloadConfig),
+        MAKE_SERVICE_COMMAND_META(ClearConfig),
     };
 };

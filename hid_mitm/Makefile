@@ -31,7 +31,7 @@ DATA		:=	data
 INCLUDES	:=	include ../libstratosphere/libstratosphere/include ../libstratosphere/libvapours/include
 EXEFS_SRC	:=	exefs_src
 
-DEFINES	:=	-DDISABLE_IPC -DATMOSPHERE_GIT_BRANCH=\"$(AMSBRANCH)\" -DATMOSPHERE_GIT_REV=\"$(AMSREV)\" -DATMOSPHERE_BOARD_NINTENDO_SWITCH
+DEFINES	:=	-DDISABLE_IPC -DATMOSPHERE_GIT_BRANCH=\"$(AMSBRANCH)\" -DATMOSPHERE_GIT_REV=\"$(AMSREV)\" -DATMOSPHERE_BOARD_NINTENDO_SWITCH -DATMOSPHERE_IS_STRATOSPHERE
 
 #---------------------------------------------------------------------------------
 # options for code generation

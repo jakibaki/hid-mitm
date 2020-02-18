@@ -14,28 +14,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "hid_mitm_service.hpp"
+
+#include "hid_custom.h"
+#include "hid_mitm_iappletresource.hpp"
+
 #include <mutex>
 #include <optional>
-#include <switch.h>
-#include "hid_mitm_service.hpp"
-#include "hid_mitm_iappletresource.hpp"
-#include "hid_custom.h"
 
-ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::os::ProcessId pid, u64 aruid)
-{
+ams::Result HidMitmService::CreateAppletResource(ams::sf::Out<std::shared_ptr<IAppletResourceMitmService>> out, ams::sf::ClientAppletResourceUserId arid) {
     Service out_iappletresource;
     SharedMemory real_shmem, fake_shmem;
     // This needs to be the first ipc being done since it relies on stuff that libstrato left for us. TODO: Do this properly
     customHidSetup(this->forward_service.get(), &out_iappletresource, &real_shmem, &fake_shmem);
 
-
     std::shared_ptr<IAppletResourceMitmService> intf = nullptr;
-
-
 
     intf = std::make_shared<IAppletResourceMitmService>(new IAppletResourceMitmService(0));
 
-    intf->pid = pid;
+    intf->pid = arid.GetValue();
     intf->fake_sharedmem = fake_shmem;
     intf->real_sharedmem = real_shmem;
     intf->iappletresource_handle = out_iappletresource;
@@ -54,4 +51,3 @@ ams::Result HidMitmService::ClearConfig() {
     clearConfig();
     return 0;
 }
-
