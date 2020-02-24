@@ -114,7 +114,7 @@ void __appExit(void) {
 }
 
 struct HidManagerOptions {
-    static const size_t PointerBufferSize = 0x100;
+    static const size_t PointerBufferSize = 0x200;
     static const size_t MaxDomains = 4;
     static const size_t MaxDomainObjects = 0x100;
 };
