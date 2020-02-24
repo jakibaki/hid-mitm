@@ -14,11 +14,11 @@ echo "building for switch"
 pushd ..
 make -j
 popd
-mkdir -p out/atmosphere/titles/0100000000000faf/flags
+mkdir -p out/atmosphere/contents/0100000000000faf/flags
 mkdir -p out/config/hid_mitm
 cp config.ini out/config/hid_mitm
-touch out/atmosphere/titles/0100000000000faf/flags/boot2.flag
-cp hid_mitm.nsp out/atmosphere/titles/0100000000000faf/exefs.nsp
+touch out/atmosphere/contents/0100000000000faf/flags/boot2.flag
+cp hid_mitm.nsp out/atmosphere/contents/0100000000000faf/exefs.nsp
 cp start.bat tools/
 cp hid-mitm.ipa tools
 cp hid-mitm.apk tools
